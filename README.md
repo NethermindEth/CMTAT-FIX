@@ -11,6 +11,10 @@ CMTAT-FIX extends CMTAT tokens with FIX descriptor capabilities through a dedica
 - Verify field values against committed descriptors using Merkle proofs
 - Deploy descriptor data efficiently using SSTORE2 pattern
 
+## Security Notice
+
+⚠️ **WARNING**: The contracts in this repository are **unaudited** and should be used with caution. They have not undergone formal security audits. Use at your own risk.
+
 ## Architecture
 
 The project follows CMTAT's modular engine pattern:
