@@ -22,7 +22,7 @@ contract FixDescriptorEngine is
     bytes32 public constant DESCRIPTOR_ADMIN_ROLE = keccak256("DESCRIPTOR_ADMIN_ROLE");
 
     /// @notice The token this engine is bound to
-    address public immutable override token;
+    address public immutable token;
 
     /**
      * @notice Constructor
@@ -77,23 +77,26 @@ contract FixDescriptorEngine is
 
     /**
      * @notice Get the complete FIX descriptor for the bound token
+     * @dev Implements IFixDescriptor.getFixDescriptor()
      * @return descriptor The FixDescriptor struct
      */
-    function getFixDescriptor() external view override returns (IFixDescriptor.FixDescriptor memory descriptor) {
+    function getFixDescriptor() external view returns (IFixDescriptor.FixDescriptor memory descriptor) {
         return _getDescriptor();
     }
 
     /**
      * @notice Get the Merkle root commitment for the bound token
+     * @dev Implements IFixDescriptor.getFixRoot()
      * @return root The fixRoot for verification
      */
-    function getFixRoot() external view override returns (bytes32 root) {
+    function getFixRoot() external view returns (bytes32 root) {
         IFixDescriptor.FixDescriptor memory descriptor = _getDescriptor();
         return descriptor.fixRoot;
     }
 
     /**
      * @notice Verify a specific field against the committed descriptor for the bound token
+     * @dev Implements IFixDescriptor.verifyField()
      * @param pathSBE SBE-encoded bytes of the field path
      * @param value Raw FIX value bytes
      * @param proof Merkle proof (sibling hashes)
@@ -105,12 +108,14 @@ contract FixDescriptorEngine is
         bytes calldata value,
         bytes32[] calldata proof,
         bool[] calldata directions
-    ) external view override returns (bool valid) {
+    ) external view returns (bool valid) {
         return _verifyField(pathSBE, value, proof, directions);
     }
 
     /**
      * @notice Get SBE data chunk from SSTORE2 storage for the bound token
+     * @dev This function is not part of the minimal IFixDescriptorEngine interface
+     *      but is available for direct calls to the engine implementation
      * @param start Start offset (in the data, not including STOP byte)
      * @param size Number of bytes to read
      * @return chunk The requested SBE data
@@ -118,16 +123,18 @@ contract FixDescriptorEngine is
     function getFixSBEChunk(
         uint256 start,
         uint256 size
-    ) external view override returns (bytes memory chunk) {
+    ) external view returns (bytes memory chunk) {
         return _getSBEChunk(start, size);
     }
 
     /**
      * @notice Set or update the FIX descriptor for the bound token
      * @dev Can only be called by authorized roles
+     *      This function is not part of the minimal IFixDescriptorEngine interface
+     *      but is available for direct calls to the engine implementation
      * @param descriptor The complete FixDescriptor struct
      */
-    function setFixDescriptor(IFixDescriptor.FixDescriptor calldata descriptor) external override onlyRole(DESCRIPTOR_ADMIN_ROLE) {
+    function setFixDescriptor(IFixDescriptor.FixDescriptor calldata descriptor) external onlyRole(DESCRIPTOR_ADMIN_ROLE) {
         _setDescriptor(descriptor);
     }
 
@@ -135,6 +142,8 @@ contract FixDescriptorEngine is
      * @notice Deploy SBE data and set descriptor in one transaction
      * @dev Deploys SBE data using SSTORE2 pattern, then sets the descriptor
      *      This is a convenience function that combines deployment and descriptor setting
+     *      This function is not part of the minimal IFixDescriptorEngine interface
+     *      but is available for direct calls to the engine implementation
      * @param sbeData Raw SBE-encoded data to deploy
      * @param descriptor Descriptor struct (fixSBEPtr and fixSBELen will be set automatically)
      * @return sbePtr Address of the deployed SBE data contract
@@ -142,7 +151,7 @@ contract FixDescriptorEngine is
     function setFixDescriptorWithSBE(
         bytes memory sbeData,
         IFixDescriptor.FixDescriptor memory descriptor
-    ) external override onlyRole(DESCRIPTOR_ADMIN_ROLE) returns (address sbePtr) {
+    ) external onlyRole(DESCRIPTOR_ADMIN_ROLE) returns (address sbePtr) {
         return _deployAndSetDescriptor(sbeData, descriptor);
     }
 }

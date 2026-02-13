@@ -6,6 +6,7 @@ import {CMTATBaseRuleEngine} from "../../CMTAT/contracts/modules/1_CMTATBaseRule
 /* ==== FixEngine === */
 import {FixDescriptorEngineModule} from "../FixDescriptorEngineModule.sol";
 import {IFixDescriptorEngine} from "../interfaces/IFixDescriptorEngine.sol";
+import {FixDescriptorEngine} from "../FixDescriptorEngine.sol";
 /* ==== FixDescriptorKit === */
 import {IFixDescriptor} from "@fixdescriptorkit/contracts/src/IFixDescriptor.sol";
 
@@ -79,7 +80,7 @@ contract CMTATWithFixDescriptor is
     {
         address engine = fixDescriptorEngine();
         require(engine != address(0), "CMTATWithFixDescriptor: Engine not set");
-        return IFixDescriptorEngine(engine).getFixDescriptor();
+        return IFixDescriptor(engine).getFixDescriptor();
     }
 
     /**
@@ -90,7 +91,7 @@ contract CMTATWithFixDescriptor is
     function getFixRoot() external view override returns (bytes32 root) {
         address engine = fixDescriptorEngine();
         require(engine != address(0), "CMTATWithFixDescriptor: Engine not set");
-        return IFixDescriptorEngine(engine).getFixRoot();
+        return IFixDescriptor(engine).getFixRoot();
     }
 
     /**
@@ -110,12 +111,13 @@ contract CMTATWithFixDescriptor is
     ) external view override returns (bool valid) {
         address engine = fixDescriptorEngine();
         require(engine != address(0), "CMTATWithFixDescriptor: Engine not set");
-        return IFixDescriptorEngine(engine).verifyField(pathSBE, value, proof, directions);
+        return IFixDescriptor(engine).verifyField(pathSBE, value, proof, directions);
     }
 
     /**
      * @notice Get SBE data chunk from SSTORE2 storage
      * @dev Forwards call to the bound FixDescriptorEngine
+     *      Note: This is not part of IFixDescriptor interface, but provided as convenience
      * @param start Start offset (in the data, not including STOP byte)
      * @param size Number of bytes to read
      * @return chunk The requested SBE data
@@ -126,7 +128,7 @@ contract CMTATWithFixDescriptor is
     ) external view returns (bytes memory chunk) {
         address engine = fixDescriptorEngine();
         require(engine != address(0), "CMTATWithFixDescriptor: Engine not set");
-        return IFixDescriptorEngine(engine).getFixSBEChunk(start, size);
+        return FixDescriptorEngine(engine).getFixSBEChunk(start, size);
     }
 
     /**
@@ -178,6 +180,7 @@ contract CMTATWithFixDescriptor is
      * @dev This is a convenience wrapper that calls the engine's setFixDescriptorWithSBE
      *      Requires DESCRIPTOR_ADMIN_ROLE on the engine (not this contract)
      *      The caller must have DESCRIPTOR_ADMIN_ROLE on the FixDescriptorEngine
+     *      Note: Uses concrete FixDescriptorEngine type since admin functions are not in the interface
      * @param sbeData Raw SBE-encoded data to deploy
      * @param descriptor Descriptor struct (fixSBEPtr and fixSBELen will be set automatically)
      * @return sbePtr Address of the deployed SBE data contract
@@ -188,7 +191,7 @@ contract CMTATWithFixDescriptor is
     ) external returns (address sbePtr) {
         address engine = fixDescriptorEngine();
         require(engine != address(0), "CMTATWithFixDescriptor: Engine not set");
-        return IFixDescriptorEngine(engine).setFixDescriptorWithSBE(sbeData, descriptor);
+        return FixDescriptorEngine(engine).setFixDescriptorWithSBE(sbeData, descriptor);
     }
 
     /**
@@ -196,11 +199,12 @@ contract CMTATWithFixDescriptor is
      * @dev This is a convenience wrapper that calls the engine's setFixDescriptor
      *      Requires DESCRIPTOR_ADMIN_ROLE on the engine (not this contract)
      *      The caller must have DESCRIPTOR_ADMIN_ROLE on the FixDescriptorEngine
+     *      Note: Uses concrete FixDescriptorEngine type since admin functions are not in the interface
      * @param descriptor The complete FixDescriptor struct (with fixSBEPtr already set)
      */
     function setDescriptor(IFixDescriptor.FixDescriptor calldata descriptor) external {
         address engine = fixDescriptorEngine();
         require(engine != address(0), "CMTATWithFixDescriptor: Engine not set");
-        IFixDescriptorEngine(engine).setFixDescriptor(descriptor);
+        FixDescriptorEngine(engine).setFixDescriptor(descriptor);
     }
 }
