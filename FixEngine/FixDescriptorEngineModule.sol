@@ -11,10 +11,7 @@ import "./interfaces/IFixDescriptorEngine.sol";
 /**
  * @title FixDescriptorEngineModule
  * @notice CMTAT module for integrating FixDescriptorEngine with CMTAT tokens
- * @dev Provides standard way to store and reference a FixDescriptorEngine for tokens
- *      Following the SnapshotEngineModule pattern - only stores/exposes engine address
- *      Uses ERC-7201 namespaced storage to avoid conflicts
- *      Users should call engine functions directly, not through this module
+ * @dev Uses ERC-7201 namespaced storage to avoid conflicts
  */
 abstract contract FixDescriptorEngineModule is Initializable {
     /* ============ ERC-7201 ============ */
@@ -50,8 +47,6 @@ abstract contract FixDescriptorEngineModule is Initializable {
 
     /**
      * @notice Set the FIX descriptor engine address
-     * @dev Can only be called by authorized roles
-     *      Reverts if setting the same engine address
      * @param engine Address of the FixDescriptorEngine contract
      */
     function setFixDescriptorEngine(address engine) external virtual {
@@ -64,15 +59,11 @@ abstract contract FixDescriptorEngineModule is Initializable {
 
     /**
      * @notice Authorize descriptor engine setting operation
-     * @dev Override this function to implement access control
-     *      Should use CMTAT's AccessControl system
      */
     function _authorizeSetDescriptorEngine() internal virtual;
 
     /**
      * @notice Get the descriptor engine address
-     * @dev Implements IFixDescriptor.getDescriptorEngine() for interface compatibility
-     *      Returns address(0) if engine is not set
      * @return engine Address of the FixDescriptorEngine contract, or address(0) if not set
      */
     function getDescriptorEngine() external view virtual returns (address engine) {
@@ -81,7 +72,7 @@ abstract contract FixDescriptorEngineModule is Initializable {
     }
 
     /**
-     * @notice Get the FIX descriptor engine address (internal view)
+     * @notice Get the FIX descriptor engine address
      * @return engine Address of the FixDescriptorEngine contract, or address(0) if not set
      */
     function fixDescriptorEngine() public view returns (address engine) {

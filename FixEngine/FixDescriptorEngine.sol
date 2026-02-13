@@ -9,8 +9,7 @@ import "./modules/VersionModule.sol";
 /**
  * @title FixDescriptorEngine
  * @notice Engine contract for managing FIX descriptor for a single bound token
- * @dev Follows CMTAT engine pattern similar to SnapshotEngine
- *      One engine instance is bound to one token at construction time
+ * @dev One engine instance is bound to one token at construction time
  */
 contract FixDescriptorEngine is
     FixDescriptorModule,
@@ -28,11 +27,8 @@ contract FixDescriptorEngine is
      * @notice Constructor
      * @param token_ Address of the token contract this engine will manage
      * @param admin Address to grant DEFAULT_ADMIN_ROLE
-     * @param sbeData_ Optional SBE-encoded data to deploy and initialize descriptor (empty bytes if not initializing)
-     * @param descriptor_ Optional descriptor struct to initialize (empty struct if not initializing)
-     * @dev If both sbeData_ and descriptor_ are provided (non-empty), the descriptor will be initialized during construction.
-     *      This allows the engine to be fully ready immediately after deployment.
-     *      If sbeData_ is empty or descriptor_.fixRoot is zero, no initialization occurs (backward compatible).
+     * @param sbeData_ Optional SBE-encoded data to deploy and initialize descriptor
+     * @param descriptor_ Optional descriptor struct to initialize
      */
     constructor(
         address token_,
@@ -45,29 +41,21 @@ contract FixDescriptorEngine is
         token = token_;
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
         
-        // Initialize descriptor if both sbeData and descriptor are provided
         if (sbeData_.length > 0 && descriptor_.fixRoot != bytes32(0)) {
             _initializeDescriptorFromConstructor(sbeData_, descriptor_);
         } else if (descriptor_.fixRoot != bytes32(0)) {
-            // If descriptor is provided but no SBE data, assume fixSBEPtr is already set
-            // This allows initialization with pre-deployed SBE data
             _initializeDescriptorFromConstructor("", descriptor_);
         }
     }
 
     /**
      * @notice Returns `true` if `account` has been granted `role`
-     * @dev Override to give Default Admin all roles (like SnapshotEngine)
-     *      Matches SnapshotEngine pattern exactly
-     * @param role The role identifier
-     * @param account The account address
-     * @return True if account has role
+     * @dev Default Admin has all roles
      */
     function hasRole(
         bytes32 role,
         address account
     ) public view virtual override(AccessControl) returns (bool) {
-        // The Default Admin has all roles
         if (AccessControl.hasRole(DEFAULT_ADMIN_ROLE, account)) {
             return true;
         } else {
@@ -114,8 +102,6 @@ contract FixDescriptorEngine is
 
     /**
      * @notice Get SBE data chunk from SSTORE2 storage for the bound token
-     * @dev This function is not part of the minimal IFixDescriptorEngine interface
-     *      but is available for direct calls to the engine implementation
      * @param start Start offset (in the data, not including STOP byte)
      * @param size Number of bytes to read
      * @return chunk The requested SBE data
@@ -129,9 +115,6 @@ contract FixDescriptorEngine is
 
     /**
      * @notice Set or update the FIX descriptor for the bound token
-     * @dev Can only be called by authorized roles
-     *      This function is not part of the minimal IFixDescriptorEngine interface
-     *      but is available for direct calls to the engine implementation
      * @param descriptor The complete FixDescriptor struct
      */
     function setFixDescriptor(IFixDescriptor.FixDescriptor calldata descriptor) external onlyRole(DESCRIPTOR_ADMIN_ROLE) {
@@ -140,10 +123,6 @@ contract FixDescriptorEngine is
 
     /**
      * @notice Deploy SBE data and set descriptor in one transaction
-     * @dev Deploys SBE data using SSTORE2 pattern, then sets the descriptor
-     *      This is a convenience function that combines deployment and descriptor setting
-     *      This function is not part of the minimal IFixDescriptorEngine interface
-     *      but is available for direct calls to the engine implementation
      * @param sbeData Raw SBE-encoded data to deploy
      * @param descriptor Descriptor struct (fixSBEPtr and fixSBELen will be set automatically)
      * @return sbePtr Address of the deployed SBE data contract

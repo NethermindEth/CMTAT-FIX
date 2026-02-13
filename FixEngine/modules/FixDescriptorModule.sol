@@ -28,8 +28,6 @@ abstract contract FixDescriptorModule {
 
     /**
      * @notice Set or update the descriptor for the bound token
-     * @dev Emits appropriate event based on whether this is first initialization or update
-     *      Delegates to FixDescriptorLib.setDescriptor()
      * @param descriptor The complete FixDescriptor struct
      */
     function _setDescriptor(IFixDescriptor.FixDescriptor calldata descriptor) internal {
@@ -46,7 +44,6 @@ abstract contract FixDescriptorModule {
 
     /**
      * @notice Verify a specific field against the committed descriptor
-     * @dev Delegates to FixDescriptorLib.verifyFieldProof()
      * @param pathSBE SBE-encoded bytes of the field path
      * @param value Raw FIX value bytes
      * @param proof Merkle proof (sibling hashes)
@@ -64,7 +61,6 @@ abstract contract FixDescriptorModule {
 
     /**
      * @notice Get SBE data chunk from SSTORE2 storage
-     * @dev Delegates to FixDescriptorLib.getFixSBEChunk()
      * @param start Start offset (in the data, not including STOP byte)
      * @param size Number of bytes to read
      * @return chunk The requested SBE data
@@ -82,8 +78,6 @@ abstract contract FixDescriptorModule {
 
     /**
      * @notice Deploy SBE data using SSTORE2 pattern and set descriptor
-     * @dev Deploys data to contract bytecode, then sets the descriptor with the pointer
-     *      This combines deployment and descriptor setting in one operation
      * @param sbeData Raw SBE-encoded data to deploy
      * @param descriptor Descriptor struct (fixSBEPtr and fixSBELen will be set automatically)
      * @return sbePtr Address of the deployed SBE data contract
@@ -92,36 +86,27 @@ abstract contract FixDescriptorModule {
         bytes memory sbeData,
         IFixDescriptor.FixDescriptor memory descriptor
     ) internal returns (address sbePtr) {
-        // Deploy SBE data using SSTORE2 pattern
         sbePtr = _deploySBE(sbeData);
 
-        // Verify deployment succeeded
         uint256 codeSize;
         assembly {
             codeSize := extcodesize(sbePtr)
         }
         require(codeSize == sbeData.length + 1, "FixDescriptorModule: Invalid SBE size");
 
-        // Update descriptor with deployed pointer and length
         descriptor.fixSBEPtr = sbePtr;
         descriptor.fixSBELen = uint32(sbeData.length);
 
-        // Set descriptor using memory-compatible helper
         _setDescriptorMemory(descriptor);
 
         return sbePtr;
     }
 
     /**
-     * @notice Set descriptor from memory (helper for deployment)
-     * @dev Internal helper to set descriptor from memory struct
-     *      Manually sets the descriptor fields since FixDescriptorLib.setDescriptor() expects calldata
-     *      This is a workaround for the memory/calldata limitation when deploying SBE data
+     * @notice Set descriptor from memory
      * @param descriptor Descriptor struct in memory
      */
     function _setDescriptorMemory(IFixDescriptor.FixDescriptor memory descriptor) internal {
-        // Manually set descriptor fields to work around memory/calldata conversion
-        // We need to access the storage directly and set fields manually
         bytes32 oldRoot = _descriptor.descriptor.fixRoot;
         _descriptor.descriptor = descriptor;
 
@@ -144,11 +129,8 @@ abstract contract FixDescriptorModule {
 
     /**
      * @notice Initialize descriptor from constructor
-     * @dev Called during constructor to initialize descriptor storage
-     *      Bypasses access control since constructor caller is implicitly authorized
-     *      If sbeData is provided, deploys it and updates descriptor pointer/length
-     * @param sbeData Raw SBE-encoded data to deploy (empty bytes if not initializing)
-     * @param descriptor Descriptor struct (fixSBEPtr and fixSBELen will be set if sbeData is provided)
+     * @param sbeData Raw SBE-encoded data to deploy
+     * @param descriptor Descriptor struct
      */
     function _initializeDescriptorFromConstructor(
         bytes memory sbeData,
@@ -156,32 +138,26 @@ abstract contract FixDescriptorModule {
     ) internal {
         address sbePtr = address(0);
         
-        // If SBE data is provided, deploy it
         if (sbeData.length > 0) {
             sbePtr = _deploySBE(sbeData);
             
-            // Verify deployment succeeded
             uint256 codeSize;
             assembly {
                 codeSize := extcodesize(sbePtr)
             }
             require(codeSize == sbeData.length + 1, "FixDescriptorModule: Invalid SBE size");
             
-            // Update descriptor with deployed pointer and length
             descriptor.fixSBEPtr = sbePtr;
             descriptor.fixSBELen = uint32(sbeData.length);
         }
         
-        // Validate descriptor has required fields
         require(descriptor.fixRoot != bytes32(0), "FixDescriptorModule: Invalid descriptor root");
         
-        // Set descriptor storage directly (will emit event)
         _setDescriptorMemory(descriptor);
     }
 
     /**
      * @notice Deploy data to a contract using SSTORE2 pattern
-     * @dev Uses SSTORE2 library to deploy data as contract bytecode
      * @param data The data to store
      * @return ptr Address of the deployed data contract
      */

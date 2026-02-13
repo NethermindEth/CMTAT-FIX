@@ -13,7 +13,7 @@ CMTAT-FIX extends CMTAT tokens with FIX descriptor capabilities through a dedica
 
 ## Architecture
 
-The project follows CMTAT's modular engine pattern, similar to `SnapshotEngine`:
+The project follows CMTAT's modular engine pattern:
 
 ### Components
 
@@ -85,31 +85,26 @@ forge install
 #### 1. Deploy the Token
 
 ```solidity
-// Deploy implementation
 CMTATWithFixDescriptor implementation = new CMTATWithFixDescriptor();
-
-// Deploy proxy (using OpenZeppelin's ERC1967Proxy)
 ERC1967Proxy proxy = new ERC1967Proxy(address(implementation), "");
 CMTATWithFixDescriptor token = CMTATWithFixDescriptor(address(proxy));
-
-// Initialize token
 token.initialize(admin, erc20Attrs, extraInfo, engines);
 ```
 
 #### 2. Deploy FixDescriptorEngine
 
-**Option A: With Constructor Initialization (Recommended)**
+**Option A: With Constructor Initialization**
 
 ```solidity
-bytes memory sbeData = hex"..."; // Your SBE-encoded FIX descriptor
-bytes32 merkleRoot = bytes32(...); // Merkle root of descriptor
+bytes memory sbeData = hex"...";
+bytes32 merkleRoot = bytes32(...);
 bytes32 schemaHash = keccak256("your-dictionary");
 
 IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
     schemaHash: schemaHash,
     fixRoot: merkleRoot,
-    fixSBEPtr: address(0), // Will be set automatically
-    fixSBELen: 0,          // Will be set automatically
+    fixSBEPtr: address(0),
+    fixSBELen: 0,
     schemaURI: "ipfs://..."
 });
 
@@ -124,11 +119,10 @@ FixDescriptorEngine engine = new FixDescriptorEngine(
 **Option B: Post-Deployment Initialization**
 
 ```solidity
-// Deploy engine without initialization
 FixDescriptorEngine engine = new FixDescriptorEngine(
     address(token),
     admin,
-    "", // empty SBE data
+    "",
     IFixDescriptor.FixDescriptor({
         schemaHash: bytes32(0),
         fixRoot: bytes32(0),
@@ -138,30 +132,21 @@ FixDescriptorEngine engine = new FixDescriptorEngine(
     })
 );
 
-// Later, set descriptor with SBE data
 engine.setFixDescriptorWithSBE(sbeData, descriptor);
 ```
 
 #### 3. Link Engine to Token
 
 ```solidity
-// Grant DESCRIPTOR_ENGINE_ROLE to admin (if needed)
 token.grantRole(token.DESCRIPTOR_ENGINE_ROLE(), admin);
-
-// Link engine to token
 token.setFixDescriptorEngine(address(engine));
 ```
 
 #### 4. Query Descriptor Information
 
 ```solidity
-// Via token interface
 IFixDescriptor.FixDescriptor memory desc = token.getFixDescriptor();
 bytes32 root = token.getFixRoot();
-
-// Via engine directly
-desc = engine.getFixDescriptor();
-root = engine.getFixRoot();
 ```
 
 #### 5. Verify Field Values
@@ -258,7 +243,7 @@ Set environment variables:
 
 - **DESCRIPTOR_ADMIN_ROLE** (on engine): Can set/update descriptors
 - **DESCRIPTOR_ENGINE_ROLE** (on token): Can set the engine address
-- **DEFAULT_ADMIN_ROLE** (on engine): Has all roles (matches SnapshotEngine pattern)
+- **DEFAULT_ADMIN_ROLE** (on engine): Has all roles
 
 ### Permission Flow
 
