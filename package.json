@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@fixdescriptorkit/contracts": "^1.0.1",
+    "@openzeppelin/contracts-upgradeable": "^5.4.0"
+  }
+}
