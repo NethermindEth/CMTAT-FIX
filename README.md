@@ -197,7 +197,8 @@ CMTAT-FIX/
 │   │   └── VersionModule.sol             # Version tracking
 │   └── examples/
 │       └── CMTATWithFixDescriptor.sol    # Example token implementation
-├── CMTAT/                                # CMTAT submodule
+├── lib/
+│   └── CMTAT/                            # CMTAT submodule
 ├── test/
 │   ├── CMTATWithFixDescriptor.t.sol     # Token integration tests
 │   └── FixDescriptorEngine.t.sol         # Engine unit tests

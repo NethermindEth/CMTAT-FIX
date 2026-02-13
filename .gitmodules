@@ -1,5 +1,5 @@
 [submodule "CMTAT"]
-	path = CMTAT
+	path = lib/CMTAT
 	url = https://github.com/CMTA/CMTAT
 [submodule "lib/forge-std"]
 	path = lib/forge-std

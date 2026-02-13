@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "../FixEngine/FixDescriptorEngine.sol";
-import "../FixEngine/examples/CMTATWithFixDescriptor.sol";
-import "../CMTAT/contracts/interfaces/technical/ICMTATConstructor.sol";
-import "../CMTAT/contracts/interfaces/tokenization/draft-IERC1643CMTAT.sol";
+import "../src/FixDescriptorEngine.sol";
+import "../src/examples/CMTATWithFixDescriptor.sol";
+import "../lib/CMTAT/contracts/interfaces/technical/ICMTATConstructor.sol";
+import "../lib/CMTAT/contracts/interfaces/tokenization/draft-IERC1643CMTAT.sol";
 import "@fixdescriptorkit/contracts/src/IFixDescriptor.sol";
 
 /**
