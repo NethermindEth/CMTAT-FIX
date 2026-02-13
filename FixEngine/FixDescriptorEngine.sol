@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import "./interfaces/IFixDescriptorEngine.sol";
-import "./modules/FixDescriptorDeploymentModule.sol";
+import "./modules/FixDescriptorModule.sol";
 import "./modules/VersionModule.sol";
 
 /**
@@ -13,7 +13,7 @@ import "./modules/VersionModule.sol";
  *      One engine instance is bound to one token at construction time
  */
 contract FixDescriptorEngine is
-    FixDescriptorDeploymentModule,
+    FixDescriptorModule,
     VersionModule,
     AccessControl,
     IFixDescriptorEngine
