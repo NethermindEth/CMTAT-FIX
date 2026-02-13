@@ -66,9 +66,7 @@ contract DeployCMTATWithFixDescriptor is Script {
         // This requires calling setFixDescriptor() or setFixDescriptorWithSBE() later
         bytes memory emptySBE = "";
         IFixDescriptor.FixDescriptor memory emptyDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 0,
-            fixMinor: 0,
-            dictHash: bytes32(0),
+            schemaHash: bytes32(0),
             fixRoot: bytes32(0),
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -87,12 +85,10 @@ contract DeployCMTATWithFixDescriptor is Script {
         // This initializes the descriptor during construction - engine is ready immediately
         bytes memory sampleSBEData = hex"a2011901f70266555344"; // Example SBE data
         bytes32 sampleMerkleRoot = bytes32(uint256(0x1234567890abcdef));
-        bytes32 sampleDictHash = keccak256("test-dictionary");
+        bytes32 sampleSchemaHash = keccak256("test-dictionary");
         
         IFixDescriptor.FixDescriptor memory initialDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 4,
-            fixMinor: 4,
-            dictHash: sampleDictHash,
+            schemaHash: sampleSchemaHash,
             fixRoot: sampleMerkleRoot,
             fixSBEPtr: address(0), // Will be set automatically by constructor
             fixSBELen: 0,          // Will be set automatically by constructor

@@ -37,9 +37,7 @@ import {IFixDescriptor} from "@fixdescriptorkit/contracts/src/IFixDescriptor.sol
  * // Deploy SBE data and set descriptor in one transaction
  * bytes memory sbeData = hex"..."; // Your SBE-encoded FIX descriptor
  * IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
- *     fixMajor: 4,
- *     fixMinor: 4,
- *     dictHash: keccak256("dictionary"),
+ *     schemaHash: keccak256("dictionary"),
  *     fixRoot: merkleRoot,
  *     fixSBEPtr: address(0), // Will be set automatically
  *     fixSBELen: 0,          // Will be set automatically

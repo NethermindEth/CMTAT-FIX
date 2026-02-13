@@ -20,7 +20,7 @@ contract FixDescriptorEngineTest is Test {
     // Sample SBE data for testing
     bytes public sampleSBEData = hex"a2011901f70266555344";
     bytes32 public sampleMerkleRoot = bytes32(uint256(0x1234567890abcdef));
-    bytes32 public sampleDictHash = keccak256("test-dictionary");
+    bytes32 public sampleSchemaHash = keccak256("test-dictionary");
 
     function setUp() public {
         admin = vm.addr(1);
@@ -35,9 +35,7 @@ contract FixDescriptorEngineTest is Test {
     function testConstructor() public {
         bytes memory emptySBE = "";
         IFixDescriptor.FixDescriptor memory emptyDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 0,
-            fixMinor: 0,
-            dictHash: bytes32(0),
+            schemaHash: bytes32(0),
             fixRoot: bytes32(0),
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -54,9 +52,7 @@ contract FixDescriptorEngineTest is Test {
     function testConstructorRevertsOnZeroToken() public {
         bytes memory emptySBE = "";
         IFixDescriptor.FixDescriptor memory emptyDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 0,
-            fixMinor: 0,
-            dictHash: bytes32(0),
+            schemaHash: bytes32(0),
             fixRoot: bytes32(0),
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -70,9 +66,7 @@ contract FixDescriptorEngineTest is Test {
     function testConstructorRevertsOnZeroAdmin() public {
         bytes memory emptySBE = "";
         IFixDescriptor.FixDescriptor memory emptyDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 0,
-            fixMinor: 0,
-            dictHash: bytes32(0),
+            schemaHash: bytes32(0),
             fixRoot: bytes32(0),
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -85,9 +79,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testConstructorWithInitialization() public {
         IFixDescriptor.FixDescriptor memory initialDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 4,
-            fixMinor: 4,
-            dictHash: sampleDictHash,
+            schemaHash: sampleSchemaHash,
             fixRoot: sampleMerkleRoot,
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -98,9 +90,7 @@ contract FixDescriptorEngineTest is Test {
 
         // Verify descriptor is immediately available
         IFixDescriptor.FixDescriptor memory desc = engine.getFixDescriptor();
-        assertEq(desc.fixMajor, 4, "Fix major version should match");
-        assertEq(desc.fixMinor, 4, "Fix minor version should match");
-        assertEq(desc.dictHash, sampleDictHash, "Dictionary hash should match");
+        assertEq(desc.schemaHash, sampleSchemaHash, "Schema hash should match");
         assertEq(desc.fixRoot, sampleMerkleRoot, "Root should match");
         assertTrue(desc.fixSBEPtr != address(0), "SBE pointer should be set");
         assertEq(desc.fixSBELen, uint32(sampleSBEData.length), "SBE length should match");
@@ -112,9 +102,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testSetFixDescriptor() public {
         engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            fixMajor: 0,
-            fixMinor: 0,
-            dictHash: bytes32(0),
+            schemaHash: bytes32(0),
             fixRoot: bytes32(0),
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -123,9 +111,7 @@ contract FixDescriptorEngineTest is Test {
 
         address preDeployedSBE = address(0x1234567890123456789012345678901234567890);
         IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 5,
-            fixMinor: 0,
-            dictHash: keccak256("new-dict"),
+            schemaHash: keccak256("new-dict"),
             fixRoot: bytes32(uint256(0xabcdef)),
             fixSBEPtr: preDeployedSBE,
             fixSBELen: 100,
@@ -136,16 +122,12 @@ contract FixDescriptorEngineTest is Test {
         engine.setFixDescriptor(descriptor);
 
         IFixDescriptor.FixDescriptor memory stored = engine.getFixDescriptor();
-        assertEq(stored.fixMajor, 5, "Major version should match");
-        assertEq(stored.fixMinor, 0, "Minor version should match");
         assertEq(stored.fixSBEPtr, preDeployedSBE, "SBE pointer should match");
     }
 
     function testSetFixDescriptorRevertsWhenUnauthorized() public {
         engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            fixMajor: 0,
-            fixMinor: 0,
-            dictHash: bytes32(0),
+            schemaHash: bytes32(0),
             fixRoot: bytes32(0),
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -153,9 +135,7 @@ contract FixDescriptorEngineTest is Test {
         }));
 
         IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 5,
-            fixMinor: 0,
-            dictHash: keccak256("new-dict"),
+            schemaHash: keccak256("new-dict"),
             fixRoot: bytes32(uint256(0xabcdef)),
             fixSBEPtr: address(0x123),
             fixSBELen: 100,
@@ -169,9 +149,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testSetFixDescriptorWithSBE() public {
         engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            fixMajor: 0,
-            fixMinor: 0,
-            dictHash: bytes32(0),
+            schemaHash: bytes32(0),
             fixRoot: bytes32(0),
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -179,9 +157,7 @@ contract FixDescriptorEngineTest is Test {
         }));
 
         IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 4,
-            fixMinor: 4,
-            dictHash: sampleDictHash,
+            schemaHash: sampleSchemaHash,
             fixRoot: sampleMerkleRoot,
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -200,9 +176,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testSetFixDescriptorWithSBERevertsWhenUnauthorized() public {
         engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            fixMajor: 0,
-            fixMinor: 0,
-            dictHash: bytes32(0),
+            schemaHash: bytes32(0),
             fixRoot: bytes32(0),
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -210,9 +184,7 @@ contract FixDescriptorEngineTest is Test {
         }));
 
         IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 4,
-            fixMinor: 4,
-            dictHash: sampleDictHash,
+            schemaHash: sampleSchemaHash,
             fixRoot: sampleMerkleRoot,
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -227,9 +199,7 @@ contract FixDescriptorEngineTest is Test {
     function testUpdateDescriptor() public {
         // Initialize with first descriptor
         IFixDescriptor.FixDescriptor memory initialDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 4,
-            fixMinor: 4,
-            dictHash: sampleDictHash,
+            schemaHash: sampleSchemaHash,
             fixRoot: sampleMerkleRoot,
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -241,9 +211,7 @@ contract FixDescriptorEngineTest is Test {
         // Update descriptor
         bytes memory newSBEData = hex"deadbeef";
         IFixDescriptor.FixDescriptor memory updatedDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 5,
-            fixMinor: 0,
-            dictHash: keccak256("updated-dict"),
+            schemaHash: keccak256("updated-dict"),
             fixRoot: bytes32(uint256(0x999)),
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -254,7 +222,6 @@ contract FixDescriptorEngineTest is Test {
         engine.setFixDescriptorWithSBE(newSBEData, updatedDescriptor);
 
         IFixDescriptor.FixDescriptor memory stored = engine.getFixDescriptor();
-        assertEq(stored.fixMajor, 5, "Updated major version should match");
         assertEq(stored.fixRoot, bytes32(uint256(0x999)), "Updated root should match");
     }
 
@@ -264,9 +231,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testGetFixDescriptor() public {
         IFixDescriptor.FixDescriptor memory initialDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 4,
-            fixMinor: 4,
-            dictHash: sampleDictHash,
+            schemaHash: sampleSchemaHash,
             fixRoot: sampleMerkleRoot,
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -276,17 +241,13 @@ contract FixDescriptorEngineTest is Test {
         engine = new FixDescriptorEngine(token, admin, sampleSBEData, initialDescriptor);
 
         IFixDescriptor.FixDescriptor memory desc = engine.getFixDescriptor();
-        assertEq(desc.fixMajor, 4, "Major version should match");
-        assertEq(desc.fixMinor, 4, "Minor version should match");
-        assertEq(desc.dictHash, sampleDictHash, "Dictionary hash should match");
+        assertEq(desc.schemaHash, sampleSchemaHash, "Schema hash should match");
         assertEq(desc.fixRoot, sampleMerkleRoot, "Root should match");
     }
 
     function testGetFixDescriptorRevertsWhenNotInitialized() public {
         engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            fixMajor: 0,
-            fixMinor: 0,
-            dictHash: bytes32(0),
+            schemaHash: bytes32(0),
             fixRoot: bytes32(0),
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -299,9 +260,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testGetFixRoot() public {
         IFixDescriptor.FixDescriptor memory initialDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 4,
-            fixMinor: 4,
-            dictHash: sampleDictHash,
+            schemaHash: sampleSchemaHash,
             fixRoot: sampleMerkleRoot,
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -316,9 +275,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testGetFixSBEChunk() public {
         IFixDescriptor.FixDescriptor memory initialDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 4,
-            fixMinor: 4,
-            dictHash: sampleDictHash,
+            schemaHash: sampleSchemaHash,
             fixRoot: sampleMerkleRoot,
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -340,9 +297,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testGetFixSBEChunkBeyondEnd() public {
         IFixDescriptor.FixDescriptor memory initialDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 4,
-            fixMinor: 4,
-            dictHash: sampleDictHash,
+            schemaHash: sampleSchemaHash,
             fixRoot: sampleMerkleRoot,
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -358,9 +313,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testGetFixSBEChunkFromBeyondEnd() public {
         IFixDescriptor.FixDescriptor memory initialDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 4,
-            fixMinor: 4,
-            dictHash: sampleDictHash,
+            schemaHash: sampleSchemaHash,
             fixRoot: sampleMerkleRoot,
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -380,9 +333,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testVerifyField() public {
         IFixDescriptor.FixDescriptor memory initialDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 4,
-            fixMinor: 4,
-            dictHash: sampleDictHash,
+            schemaHash: sampleSchemaHash,
             fixRoot: sampleMerkleRoot,
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -411,9 +362,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testHasRole() public {
         engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            fixMajor: 0,
-            fixMinor: 0,
-            dictHash: bytes32(0),
+            schemaHash: bytes32(0),
             fixRoot: bytes32(0),
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -431,9 +380,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testGrantRole() public {
         engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            fixMajor: 0,
-            fixMinor: 0,
-            dictHash: bytes32(0),
+            schemaHash: bytes32(0),
             fixRoot: bytes32(0),
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -464,9 +411,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testRevokeRole() public {
         engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            fixMajor: 0,
-            fixMinor: 0,
-            dictHash: bytes32(0),
+            schemaHash: bytes32(0),
             fixRoot: bytes32(0),
             fixSBEPtr: address(0),
             fixSBELen: 0,

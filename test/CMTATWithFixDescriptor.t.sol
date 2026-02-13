@@ -28,7 +28,7 @@ contract CMTATWithFixDescriptorTest is Test {
     // Sample SBE data for testing
     bytes public sampleSBEData = hex"a2011901f70266555344"; // Simple SBE encoded data
     bytes32 public sampleMerkleRoot = bytes32(uint256(0x1234567890abcdef));
-    bytes32 public sampleDictHash = keccak256("test-dictionary");
+    bytes32 public sampleSchemaHash = keccak256("test-dictionary");
 
     function setUp() public {
         admin = vm.addr(1);
@@ -87,9 +87,7 @@ contract CMTATWithFixDescriptorTest is Test {
         // Deploy engine bound to token (without constructor initialization for backward compatibility)
         bytes memory emptySBE = "";
         IFixDescriptor.FixDescriptor memory emptyDescriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 0,
-            fixMinor: 0,
-            dictHash: bytes32(0),
+            schemaHash: bytes32(0),
             fixRoot: bytes32(0),
             fixSBEPtr: address(0),
             fixSBELen: 0,
@@ -113,9 +111,7 @@ contract CMTATWithFixDescriptorTest is Test {
 
         // Set descriptor with SBE data
         IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
-            fixMajor: 4,
-            fixMinor: 4,
-            dictHash: sampleDictHash,
+            schemaHash: sampleSchemaHash,
             fixRoot: sampleMerkleRoot,
             fixSBEPtr: address(0), // Will be set by engine
             fixSBELen: 0,          // Will be set by engine
@@ -138,9 +134,7 @@ contract CMTATWithFixDescriptorTest is Test {
     function testGetFixDescriptor() public view {
         IFixDescriptor.FixDescriptor memory descriptor = token.getFixDescriptor();
         
-        assertEq(descriptor.fixMajor, 4, "Fix major version mismatch");
-        assertEq(descriptor.fixMinor, 4, "Fix minor version mismatch");
-        assertEq(descriptor.dictHash, sampleDictHash, "Dictionary hash mismatch");
+        assertEq(descriptor.schemaHash, sampleSchemaHash, "Schema hash mismatch");
         assertEq(descriptor.fixRoot, sampleMerkleRoot, "Merkle root mismatch");
         assertTrue(descriptor.fixSBEPtr != address(0), "SBE pointer should be set");
         assertEq(descriptor.fixSBELen, uint32(sampleSBEData.length), "SBE length mismatch");
@@ -267,9 +261,7 @@ contract CMTATWithFixDescriptorTest is Test {
         IFixDescriptor.FixDescriptor memory engineDesc = engine.getFixDescriptor();
         IFixDescriptor.FixDescriptor memory tokenDesc = token.getFixDescriptor();
         
-        assertEq(engineDesc.fixMajor, tokenDesc.fixMajor, "Major version should match");
-        assertEq(engineDesc.fixMinor, tokenDesc.fixMinor, "Minor version should match");
-        assertEq(engineDesc.dictHash, tokenDesc.dictHash, "Dict hash should match");
+        assertEq(engineDesc.schemaHash, tokenDesc.schemaHash, "Schema hash should match");
         assertEq(engineDesc.fixRoot, tokenDesc.fixRoot, "Root should match");
         assertEq(engineDesc.fixSBEPtr, tokenDesc.fixSBEPtr, "SBE pointer should match");
         assertEq(engineDesc.fixSBELen, tokenDesc.fixSBELen, "SBE length should match");
