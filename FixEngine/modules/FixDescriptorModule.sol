@@ -3,6 +3,7 @@ pragma solidity ^0.8.20;
 
 import "@fixdescriptorkit/contracts/src/IFixDescriptor.sol";
 import "@fixdescriptorkit/contracts/src/FixDescriptorLib.sol";
+import "@fixdescriptorkit/contracts/src/SSTORE2.sol";
 
 /**
  * @title FixDescriptorModule
@@ -180,36 +181,11 @@ abstract contract FixDescriptorModule {
 
     /**
      * @notice Deploy data to a contract using SSTORE2 pattern
-     * @dev Uses the same pattern as DataContractFactory - deploys data as contract bytecode
-     *      Prepend STOP opcode (0x00) to prevent calls to the contract
+     * @dev Uses SSTORE2 library to deploy data as contract bytecode
      * @param data The data to store
      * @return ptr Address of the deployed data contract
      */
     function _deploySBE(bytes memory data) internal returns (address ptr) {
-        // Prepend STOP opcode (0x00) to prevent calls to the contract
-        bytes memory runtimeCode = abi.encodePacked(hex"00", data);
-
-        // Create initialization code that returns the runtime code
-        // Pattern from 0xSequence SSTORE2:
-        // 0x63 - PUSH4 (size)
-        // size - runtime code size (4 bytes)
-        // 0x80 - DUP1
-        // 0x60 0x0E - PUSH1 14 (offset where runtime code starts)
-        // 0x60 0x00 - PUSH1 0 (memory destination)
-        // 0x39 - CODECOPY
-        // 0x60 0x00 - PUSH1 0 (offset in memory to return from)
-        // 0xF3 - RETURN
-        bytes memory creationCode = abi.encodePacked(
-            hex"63",
-            uint32(runtimeCode.length),
-            hex"80600e6000396000f3",
-            runtimeCode
-        );
-
-        assembly {
-            ptr := create(0, add(creationCode, 0x20), mload(creationCode))
-        }
-
-        require(ptr != address(0), "FixDescriptorModule: Deployment failed");
+        return SSTORE2.write(data);
     }
 }
