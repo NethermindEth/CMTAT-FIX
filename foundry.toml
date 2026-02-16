@@ -7,7 +7,8 @@ remappings = [
     "@openzeppelin/contracts/=lib/CMTAT/openzeppelin-contracts-upgradeable/lib/openzeppelin-contracts/contracts/",
     "@openzeppelin/contracts-upgradeable/=lib/CMTAT/openzeppelin-contracts-upgradeable/contracts/",
     "@fixdescriptorkit/contracts/=node_modules/@fixdescriptorkit/contracts/",
-    "forge-std/=lib/forge-std/src/"
+    "forge-std/=lib/forge-std/src/",
+    "CMTAT/contracts/=lib/CMTAT/contracts",
 ]
 via_ir = true
 optimizer = true

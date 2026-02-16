@@ -49,10 +49,12 @@ abstract contract FixDescriptorEngineModule is Initializable {
      * @notice Set the FIX descriptor engine address
      * @param engine Address of the FixDescriptorEngine contract
      */
-    function setFixDescriptorEngine(address engine) external virtual {
+    function setFixDescriptorEngine(address engine, address token) external virtual {
         _authorizeSetDescriptorEngine();
         FixDescriptorEngineModuleStorage storage $ = _getFixDescriptorEngineModuleStorage();
         require($._fixDescriptorEngine != engine, "FixDescriptorEngineModule: Same engine");
+        require(engine != address(0), "FixDescriptorEngineModule: Invalid engine address");
+        require(IFixDescriptorEngine(engine).token() == address(token), "FixDescriptorEngineModule: Engine not bound to this CMTAT");
         $._fixDescriptorEngine = engine;
         emit FixDescriptorEngineSet(engine);
     }

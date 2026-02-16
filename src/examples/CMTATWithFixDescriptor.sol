@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 /* ==== CMTAT === */
-import {CMTATBaseRuleEngine} from "../../lib/CMTAT/contracts/modules/1_CMTATBaseRuleEngine.sol";
+import {CMTATBaseRuleEngine} from "CMTAT/contracts/modules/1_CMTATBaseRuleEngine.sol";
 /* ==== FixEngine === */
 import {FixDescriptorEngineModule} from "../FixDescriptorEngineModule.sol";
 import {IFixDescriptorEngine} from "../interfaces/IFixDescriptorEngine.sol";

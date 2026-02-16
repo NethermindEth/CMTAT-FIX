@@ -131,7 +131,7 @@ contract DeployCMTATWithFixDescriptor is Script {
         console.log("\n=== Next Steps (Pattern 2 only) ===");
         console.log("1. Deploy proxy pointing to implementation");
         console.log("2. Initialize proxy with initialize()");
-        console.log("3. Call token.setFixDescriptorEngine(address(engine))");
+        console.log("3. Call token.setFixDescriptorEngine(address(engine), address(token))");
         console.log("4. Grant DESCRIPTOR_ADMIN_ROLE on engine to admin");
         console.log("5. Call engine.setFixDescriptorWithSBE() to set descriptor");
     }

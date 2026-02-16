@@ -143,7 +143,7 @@ engine.setFixDescriptorWithSBE(sbeData, descriptor);
 
 ```solidity
 token.grantRole(token.DESCRIPTOR_ENGINE_ROLE(), admin);
-token.setFixDescriptorEngine(address(engine));
+token.setFixDescriptorEngine(address(engine), address(token));
 ```
 
 #### 4. Query Descriptor Information
