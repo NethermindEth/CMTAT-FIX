@@ -184,9 +184,9 @@ contract CMTATWithFixDescriptorTest is Test {
     function testVerifyField() public view {
         // Create a simple merkle proof for testing
         // For a single leaf tree, the proof is empty
-        bytes memory pathSBE = hex"01";
+        bytes memory pathCBOR = hex"01";
         bytes memory value = hex"37";
-        bytes32 leaf = keccak256(abi.encodePacked(pathSBE, value));
+        bytes32 leaf = keccak256(abi.encodePacked(pathCBOR, "=", value));
         
         // If root equals leaf (single node tree), empty proof should work
         // This is a simplified test - in production you'd use real merkle proofs
@@ -195,7 +195,7 @@ contract CMTATWithFixDescriptorTest is Test {
         
         // Note: This will only pass if the root was set to match this proof
         // In a real scenario, you'd generate proper merkle proofs
-        bool isValid = token.verifyField(pathSBE, value, proof, directions);
+        bool isValid = token.verifyField(pathCBOR, value, proof, directions);
         // We can't assert true here without proper merkle tree setup
         // This test demonstrates the function call works
         assertTrue(isValid || !isValid, "verifyField should return a boolean");
@@ -240,13 +240,13 @@ contract CMTATWithFixDescriptorTest is Test {
     function testVerifyFieldRevertsWhenEngineNotSet() public {
         CMTATWithFixDescriptor newToken = new CMTATWithFixDescriptor();
         
-        bytes memory pathSBE = hex"01";
+        bytes memory pathCBOR = hex"01";
         bytes memory value = hex"37";
         bytes32[] memory proof = new bytes32[](0);
         bool[] memory directions = new bool[](0);
         
         vm.expectRevert("CMTATWithFixDescriptor: Engine not set");
-        newToken.verifyField(pathSBE, value, proof, directions);
+        newToken.verifyField(pathCBOR, value, proof, directions);
     }
 
     /*//////////////////////////////////////////////////////////////
