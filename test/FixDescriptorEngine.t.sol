@@ -343,14 +343,14 @@ contract FixDescriptorEngineTest is Test {
         engine = new FixDescriptorEngine(token, admin, sampleSBEData, initialDescriptor);
 
         // Create a simple merkle proof for testing
-        bytes memory pathSBE = hex"01";
+        bytes memory pathCBOR = hex"01";
         bytes memory value = hex"37";
         bytes32[] memory proof = new bytes32[](0);
         bool[] memory directions = new bool[](0);
 
         // Note: This will only pass if the root was set to match this proof
         // In a real scenario, you'd generate proper merkle proofs
-        bool isValid = engine.verifyField(pathSBE, value, proof, directions);
+        bool isValid = engine.verifyField(pathCBOR, value, proof, directions);
         // We can't assert true here without proper merkle tree setup
         // This test demonstrates the function call works
         assertTrue(isValid || !isValid, "verifyField should return a boolean");

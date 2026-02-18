@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 /* ==== CMTAT === */
-import {CMTATBaseRuleEngine} from "../../lib/CMTAT/contracts/modules/1_CMTATBaseRuleEngine.sol";
+import {CMTATBaseRuleEngine} from "CMTAT/contracts/modules/1_CMTATBaseRuleEngine.sol";
 /* ==== FixEngine === */
 import {FixDescriptorEngineModule} from "../FixDescriptorEngineModule.sol";
 import {IFixDescriptorEngine} from "../interfaces/IFixDescriptorEngine.sol";
@@ -56,21 +56,21 @@ contract CMTATWithFixDescriptor is
 
     /**
      * @notice Verify a specific field against the committed descriptor
-     * @param pathSBE SBE-encoded bytes of the field path
+     * @param pathCBOR CBOR-encoded bytes of the field path
      * @param value Raw FIX value bytes
      * @param proof Merkle proof (sibling hashes)
      * @param directions Direction array (true=right child, false=left child)
      * @return valid True if the proof is valid
      */
     function verifyField(
-        bytes calldata pathSBE,
+        bytes calldata pathCBOR,
         bytes calldata value,
         bytes32[] calldata proof,
         bool[] calldata directions
     ) external view override returns (bool valid) {
         address engine = fixDescriptorEngine();
         require(engine != address(0), "CMTATWithFixDescriptor: Engine not set");
-        return IFixDescriptor(engine).verifyField(pathSBE, value, proof, directions);
+        return IFixDescriptor(engine).verifyField(pathCBOR, value, proof, directions);
     }
 
     /**

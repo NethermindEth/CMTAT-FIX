@@ -143,7 +143,7 @@ engine.setFixDescriptorWithSBE(sbeData, descriptor);
 
 ```solidity
 token.grantRole(token.DESCRIPTOR_ENGINE_ROLE(), admin);
-token.setFixDescriptorEngine(address(engine));
+token.setFixDescriptorEngine(address(engine), address(token));
 ```
 
 #### 4. Query Descriptor Information
@@ -156,12 +156,12 @@ bytes32 root = token.getFixRoot();
 #### 5. Verify Field Values
 
 ```solidity
-bytes calldata pathSBE; // SBE-encoded field path
+bytes calldata pathCBOR; // CBOR-encoded field path
 bytes calldata value;   // Raw FIX value bytes
 bytes32[] calldata proof; // Merkle proof
 bool[] calldata directions; // Direction array
 
-bool isValid = token.verifyField(pathSBE, value, proof, directions);
+bool isValid = token.verifyField(pathCBOR, value, proof, directions);
 ```
 
 ### Advanced Usage

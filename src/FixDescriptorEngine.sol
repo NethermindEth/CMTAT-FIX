@@ -85,19 +85,19 @@ contract FixDescriptorEngine is
     /**
      * @notice Verify a specific field against the committed descriptor for the bound token
      * @dev Implements IFixDescriptor.verifyField()
-     * @param pathSBE SBE-encoded bytes of the field path
+     * @param pathCBOR CBOR-encoded bytes of the field path
      * @param value Raw FIX value bytes
      * @param proof Merkle proof (sibling hashes)
      * @param directions Direction array (true=right child, false=left child)
      * @return valid True if the proof is valid
      */
     function verifyField(
-        bytes calldata pathSBE,
+        bytes calldata pathCBOR,
         bytes calldata value,
         bytes32[] calldata proof,
         bool[] calldata directions
     ) external view returns (bool valid) {
-        return _verifyField(pathSBE, value, proof, directions);
+        return _verifyField(pathCBOR, value, proof, directions);
     }
 
     /**

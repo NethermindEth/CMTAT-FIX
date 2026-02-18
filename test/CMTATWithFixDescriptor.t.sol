@@ -4,12 +4,12 @@ pragma solidity ^0.8.20;
 import "forge-std/Test.sol";
 import "../src/examples/CMTATWithFixDescriptor.sol";
 import "../src/FixDescriptorEngine.sol";
-import "../lib/CMTAT/contracts/modules/1_CMTATBaseRuleEngine.sol";
-import "../lib/CMTAT/contracts/interfaces/technical/ICMTATConstructor.sol";
-import "../lib/CMTAT/contracts/interfaces/tokenization/draft-IERC1643CMTAT.sol";
-import "../lib/CMTAT/contracts/interfaces/engine/IRuleEngine.sol";
-import "../lib/CMTAT/contracts/interfaces/engine/ISnapshotEngine.sol";
-import "../lib/CMTAT/contracts/interfaces/engine/IDocumentEngine.sol";
+import "CMTAT/contracts/modules/1_CMTATBaseRuleEngine.sol";
+import "CMTAT/contracts/interfaces/technical/ICMTATConstructor.sol";
+import "CMTAT/contracts/interfaces/tokenization/draft-IERC1643CMTAT.sol";
+import "CMTAT/contracts/interfaces/engine/IRuleEngine.sol";
+import "CMTAT/contracts/interfaces/engine/ISnapshotEngine.sol";
+import "CMTAT/contracts/interfaces/engine/IDocumentEngine.sol";
 import "@fixdescriptorkit/contracts/src/IFixDescriptor.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
@@ -102,7 +102,7 @@ contract CMTATWithFixDescriptorTest is Test {
         
         // Set engine on token (now admin has DEFAULT_ADMIN_ROLE from initialization)
         vm.prank(admin);
-        token.setFixDescriptorEngine(address(engine));
+        token.setFixDescriptorEngine(address(engine), address(token));
 
         // Grant DESCRIPTOR_ADMIN_ROLE to admin on engine (admin already has it via hasRole override, but grant explicitly for clarity)
         vm.startPrank(admin);
@@ -184,9 +184,9 @@ contract CMTATWithFixDescriptorTest is Test {
     function testVerifyField() public view {
         // Create a simple merkle proof for testing
         // For a single leaf tree, the proof is empty
-        bytes memory pathSBE = hex"01";
+        bytes memory pathCBOR = hex"01";
         bytes memory value = hex"37";
-        bytes32 leaf = keccak256(abi.encodePacked(pathSBE, value));
+        bytes32 leaf = keccak256(abi.encodePacked(pathCBOR, "=", value));
         
         // If root equals leaf (single node tree), empty proof should work
         // This is a simplified test - in production you'd use real merkle proofs
@@ -195,7 +195,7 @@ contract CMTATWithFixDescriptorTest is Test {
         
         // Note: This will only pass if the root was set to match this proof
         // In a real scenario, you'd generate proper merkle proofs
-        bool isValid = token.verifyField(pathSBE, value, proof, directions);
+        bool isValid = token.verifyField(pathCBOR, value, proof, directions);
         // We can't assert true here without proper merkle tree setup
         // This test demonstrates the function call works
         assertTrue(isValid || !isValid, "verifyField should return a boolean");
@@ -240,13 +240,13 @@ contract CMTATWithFixDescriptorTest is Test {
     function testVerifyFieldRevertsWhenEngineNotSet() public {
         CMTATWithFixDescriptor newToken = new CMTATWithFixDescriptor();
         
-        bytes memory pathSBE = hex"01";
+        bytes memory pathCBOR = hex"01";
         bytes memory value = hex"37";
         bytes32[] memory proof = new bytes32[](0);
         bool[] memory directions = new bool[](0);
         
         vm.expectRevert("CMTATWithFixDescriptor: Engine not set");
-        newToken.verifyField(pathSBE, value, proof, directions);
+        newToken.verifyField(pathCBOR, value, proof, directions);
     }
 
     /*//////////////////////////////////////////////////////////////
