@@ -30,6 +30,16 @@ contract CMTATWithFixDescriptorTest is Test {
     bytes32 public sampleMerkleRoot = bytes32(uint256(0x1234567890abcdef));
     bytes32 public sampleSchemaHash = keccak256("test-dictionary");
 
+    function _emptyDescriptor() internal pure returns (IFixDescriptor.FixDescriptor memory descriptor) {
+        descriptor = IFixDescriptor.FixDescriptor({
+            schemaHash: bytes32(0),
+            fixRoot: bytes32(0),
+            fixSBEPtr: address(0),
+            fixSBELen: 0,
+            schemaURI: ""
+        });
+    }
+
     function setUp() public {
         admin = vm.addr(1);
         user = vm.addr(2);
@@ -83,13 +93,7 @@ contract CMTATWithFixDescriptorTest is Test {
 
         // Deploy engine bound to token (without constructor initialization for backward compatibility)
         bytes memory emptySBE = "";
-        IFixDescriptor.FixDescriptor memory emptyDescriptor = IFixDescriptor.FixDescriptor({
-            schemaHash: bytes32(0),
-            fixRoot: bytes32(0),
-            fixSBEPtr: address(0),
-            fixSBELen: 0,
-            schemaURI: ""
-        });
+        IFixDescriptor.FixDescriptor memory emptyDescriptor = _emptyDescriptor();
         engine = new FixDescriptorEngine(address(token), admin, emptySBE, emptyDescriptor);
 
         // Verify engine admin has DEFAULT_ADMIN_ROLE
@@ -182,21 +186,14 @@ contract CMTATWithFixDescriptorTest is Test {
     }
 
     function testVerifyField() public view {
-        // Create a simple merkle proof for testing
-        // For a single leaf tree, the proof is empty
+        // This test only checks call plumbing through token->engine with current setUp descriptor.
+        // Deterministic valid/invalid proof assertions are covered in dedicated tests below.
         bytes memory pathCBOR = hex"01";
         bytes memory value = hex"37";
-
-        // If root equals leaf (single node tree), empty proof should work
-        // This is a simplified test - in production you'd use real merkle proofs
         bytes32[] memory proof = new bytes32[](0);
         bool[] memory directions = new bool[](0);
 
-        // Note: This will only pass if the root was set to match this proof
-        // In a real scenario, you'd generate proper merkle proofs
         bool isValid = token.verifyField(pathCBOR, value, proof, directions);
-        // We can't assert true here without proper merkle tree setup
-        // This test demonstrates the function call works
         assertTrue(isValid || !isValid, "verifyField should return a boolean");
     }
 
@@ -257,22 +254,29 @@ contract CMTATWithFixDescriptorTest is Test {
     }
 
     function testSetFixDescriptorEngineRevertsWhenEngineBoundToAnotherToken() public {
-        FixDescriptorEngine otherEngine = new FixDescriptorEngine(
-            address(0xBEEF),
-            admin,
-            "",
-            IFixDescriptor.FixDescriptor({
-                schemaHash: bytes32(0),
-                fixRoot: bytes32(0),
-                fixSBEPtr: address(0),
-                fixSBELen: 0,
-                schemaURI: ""
-            })
-        );
+        FixDescriptorEngine otherEngine = new FixDescriptorEngine(address(0xBEEF), admin, "", _emptyDescriptor());
 
         vm.prank(admin);
         vm.expectRevert("FixDescriptorEngineModule: Engine not bound to this CMTAT");
         token.setFixDescriptorEngine(address(otherEngine));
+    }
+
+    function testSetFixDescriptorEngineRevertsWhenSameEngine() public {
+        vm.prank(admin);
+        vm.expectRevert("FixDescriptorEngineModule: Same engine");
+        token.setFixDescriptorEngine(address(engine));
+    }
+
+    function testSetFixDescriptorEngineRevertsWhenZeroAddress() public {
+        vm.prank(admin);
+        vm.expectRevert("FixDescriptorEngineModule: Invalid engine address");
+        token.setFixDescriptorEngine(address(0));
+    }
+
+    function testSetFixDescriptorEngineRevertsWhenUnauthorized() public {
+        vm.prank(user);
+        vm.expectRevert();
+        token.setFixDescriptorEngine(address(engine));
     }
 
     function testSetDescriptorWithSBEViaTokenRevertsWhenUnauthorized() public {
@@ -287,6 +291,20 @@ contract CMTATWithFixDescriptorTest is Test {
         vm.prank(user);
         vm.expectRevert();
         token.setDescriptorWithSBE(hex"deadbeef", descriptor);
+    }
+
+    function testSetDescriptorViaTokenRevertsWhenUnauthorized() public {
+        IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
+            schemaHash: keccak256("unauthorized-direct"),
+            fixRoot: bytes32(uint256(0x444)),
+            fixSBEPtr: address(0x1234567890123456789012345678901234567890),
+            fixSBELen: 42,
+            schemaURI: "ipfs://QmUnauthorizedDirect"
+        });
+
+        vm.prank(user);
+        vm.expectRevert();
+        token.setDescriptor(descriptor);
     }
 
     function testSetDescriptorWithSBEViaTokenWorksForAdmin() public {
@@ -324,6 +342,63 @@ contract CMTATWithFixDescriptorTest is Test {
         assertEq(stored.fixRoot, bytes32(uint256(0x333)), "Descriptor root should update");
         assertEq(stored.fixSBEPtr, descriptor.fixSBEPtr, "Descriptor pointer should update");
         assertEq(stored.fixSBELen, descriptor.fixSBELen, "Descriptor length should update");
+    }
+
+    function testVerifyFieldReturnsTrueForValidLeafProof() public {
+        bytes memory pathCBOR = hex"01";
+        bytes memory value = hex"37";
+        bytes32 root = keccak256(abi.encodePacked(pathCBOR, value));
+
+        FixDescriptorEngine proofEngine = new FixDescriptorEngine(
+            address(token),
+            admin,
+            "",
+            IFixDescriptor.FixDescriptor({
+                schemaHash: keccak256("proof-dict"),
+                fixRoot: root,
+                fixSBEPtr: address(0),
+                fixSBELen: 0,
+                schemaURI: "ipfs://QmProof"
+            })
+        );
+
+        vm.prank(admin);
+        token.setFixDescriptorEngine(address(proofEngine));
+
+        bytes32[] memory proof = new bytes32[](0);
+        bool[] memory directions = new bool[](0);
+        bool isValid = token.verifyField(pathCBOR, value, proof, directions);
+
+        assertTrue(isValid, "Valid leaf proof should verify");
+    }
+
+    function testVerifyFieldReturnsFalseForInvalidLeafProof() public {
+        bytes memory pathCBOR = hex"01";
+        bytes memory value = hex"37";
+        bytes memory wrongValue = hex"38";
+        bytes32 root = keccak256(abi.encodePacked(pathCBOR, value));
+
+        FixDescriptorEngine proofEngine = new FixDescriptorEngine(
+            address(token),
+            admin,
+            "",
+            IFixDescriptor.FixDescriptor({
+                schemaHash: keccak256("proof-dict"),
+                fixRoot: root,
+                fixSBEPtr: address(0),
+                fixSBELen: 0,
+                schemaURI: "ipfs://QmProof"
+            })
+        );
+
+        vm.prank(admin);
+        token.setFixDescriptorEngine(address(proofEngine));
+
+        bytes32[] memory proof = new bytes32[](0);
+        bool[] memory directions = new bool[](0);
+        bool isValid = token.verifyField(pathCBOR, wrongValue, proof, directions);
+
+        assertFalse(isValid, "Wrong leaf should fail verification");
     }
 
     function testEngineDescriptorMatchesToken() public view {

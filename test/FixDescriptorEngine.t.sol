@@ -22,6 +22,16 @@ contract FixDescriptorEngineTest is Test {
     bytes32 public sampleMerkleRoot = bytes32(uint256(0x1234567890abcdef));
     bytes32 public sampleSchemaHash = keccak256("test-dictionary");
 
+    function _emptyDescriptor() internal pure returns (IFixDescriptor.FixDescriptor memory descriptor) {
+        descriptor = IFixDescriptor.FixDescriptor({
+            schemaHash: bytes32(0),
+            fixRoot: bytes32(0),
+            fixSBEPtr: address(0),
+            fixSBELen: 0,
+            schemaURI: ""
+        });
+    }
+
     function setUp() public {
         admin = vm.addr(1);
         user = vm.addr(2);
@@ -34,13 +44,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testConstructor() public {
         bytes memory emptySBE = "";
-        IFixDescriptor.FixDescriptor memory emptyDescriptor = IFixDescriptor.FixDescriptor({
-            schemaHash: bytes32(0),
-            fixRoot: bytes32(0),
-            fixSBEPtr: address(0),
-            fixSBELen: 0,
-            schemaURI: ""
-        });
+        IFixDescriptor.FixDescriptor memory emptyDescriptor = _emptyDescriptor();
 
         engine = new FixDescriptorEngine(token, admin, emptySBE, emptyDescriptor);
 
@@ -51,13 +55,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testConstructorRevertsOnZeroToken() public {
         bytes memory emptySBE = "";
-        IFixDescriptor.FixDescriptor memory emptyDescriptor = IFixDescriptor.FixDescriptor({
-            schemaHash: bytes32(0),
-            fixRoot: bytes32(0),
-            fixSBEPtr: address(0),
-            fixSBELen: 0,
-            schemaURI: ""
-        });
+        IFixDescriptor.FixDescriptor memory emptyDescriptor = _emptyDescriptor();
 
         vm.expectRevert("FixDescriptorEngine: Invalid token address");
         new FixDescriptorEngine(address(0), admin, emptySBE, emptyDescriptor);
@@ -65,13 +63,7 @@ contract FixDescriptorEngineTest is Test {
 
     function testConstructorRevertsOnZeroAdmin() public {
         bytes memory emptySBE = "";
-        IFixDescriptor.FixDescriptor memory emptyDescriptor = IFixDescriptor.FixDescriptor({
-            schemaHash: bytes32(0),
-            fixRoot: bytes32(0),
-            fixSBEPtr: address(0),
-            fixSBELen: 0,
-            schemaURI: ""
-        });
+        IFixDescriptor.FixDescriptor memory emptyDescriptor = _emptyDescriptor();
 
         vm.expectRevert("FixDescriptorEngine: Invalid admin address");
         new FixDescriptorEngine(token, address(0), emptySBE, emptyDescriptor);
@@ -96,23 +88,17 @@ contract FixDescriptorEngineTest is Test {
         assertEq(desc.fixSBELen, uint32(sampleSBEData.length), "SBE length should match");
     }
 
+    function testVersion() public {
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
+        assertEq(engine.version(), "1.0.0", "Version should match module constant");
+    }
+
     /*//////////////////////////////////////////////////////////////
                         DESCRIPTOR MANAGEMENT TESTS
     //////////////////////////////////////////////////////////////*/
 
     function testSetFixDescriptor() public {
-        engine = new FixDescriptorEngine(
-            token,
-            admin,
-            "",
-            IFixDescriptor.FixDescriptor({
-                schemaHash: bytes32(0),
-                fixRoot: bytes32(0),
-                fixSBEPtr: address(0),
-                fixSBELen: 0,
-                schemaURI: ""
-            })
-        );
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
 
         address preDeployedSBE = address(0x1234567890123456789012345678901234567890);
         IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
@@ -131,18 +117,7 @@ contract FixDescriptorEngineTest is Test {
     }
 
     function testSetFixDescriptorRevertsWhenUnauthorized() public {
-        engine = new FixDescriptorEngine(
-            token,
-            admin,
-            "",
-            IFixDescriptor.FixDescriptor({
-                schemaHash: bytes32(0),
-                fixRoot: bytes32(0),
-                fixSBEPtr: address(0),
-                fixSBELen: 0,
-                schemaURI: ""
-            })
-        );
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
 
         IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
             schemaHash: keccak256("new-dict"),
@@ -158,18 +133,7 @@ contract FixDescriptorEngineTest is Test {
     }
 
     function testSetFixDescriptorWithSBE() public {
-        engine = new FixDescriptorEngine(
-            token,
-            admin,
-            "",
-            IFixDescriptor.FixDescriptor({
-                schemaHash: bytes32(0),
-                fixRoot: bytes32(0),
-                fixSBEPtr: address(0),
-                fixSBELen: 0,
-                schemaURI: ""
-            })
-        );
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
 
         IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
             schemaHash: sampleSchemaHash,
@@ -190,18 +154,7 @@ contract FixDescriptorEngineTest is Test {
     }
 
     function testSetFixDescriptorWithSBEAllowsBoundTokenCaller() public {
-        engine = new FixDescriptorEngine(
-            token,
-            admin,
-            "",
-            IFixDescriptor.FixDescriptor({
-                schemaHash: bytes32(0),
-                fixRoot: bytes32(0),
-                fixSBEPtr: address(0),
-                fixSBELen: 0,
-                schemaURI: ""
-            })
-        );
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
 
         IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
             schemaHash: sampleSchemaHash,
@@ -219,18 +172,7 @@ contract FixDescriptorEngineTest is Test {
     }
 
     function testSetFixDescriptorWithSBERevertsWhenUnauthorized() public {
-        engine = new FixDescriptorEngine(
-            token,
-            admin,
-            "",
-            IFixDescriptor.FixDescriptor({
-                schemaHash: bytes32(0),
-                fixRoot: bytes32(0),
-                fixSBEPtr: address(0),
-                fixSBELen: 0,
-                schemaURI: ""
-            })
-        );
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
 
         IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
             schemaHash: sampleSchemaHash,
@@ -274,6 +216,25 @@ contract FixDescriptorEngineTest is Test {
         assertEq(stored.fixRoot, bytes32(uint256(0x999)), "Updated root should match");
     }
 
+    function testSetFixDescriptorAllowsBoundTokenCaller() public {
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
+
+        IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
+            schemaHash: keccak256("token-direct-write"),
+            fixRoot: bytes32(uint256(0x777)),
+            fixSBEPtr: address(0x1234567890123456789012345678901234567890),
+            fixSBELen: 10,
+            schemaURI: "ipfs://QmTokenDirect"
+        });
+
+        vm.prank(token);
+        engine.setFixDescriptor(descriptor);
+
+        IFixDescriptor.FixDescriptor memory stored = engine.getFixDescriptor();
+        assertEq(stored.fixRoot, descriptor.fixRoot, "Bound token caller should update root");
+        assertEq(stored.fixSBEPtr, descriptor.fixSBEPtr, "Bound token caller should update pointer");
+    }
+
     /*//////////////////////////////////////////////////////////////
                         VIEW FUNCTION TESTS
     //////////////////////////////////////////////////////////////*/
@@ -295,18 +256,7 @@ contract FixDescriptorEngineTest is Test {
     }
 
     function testGetFixDescriptorRevertsWhenNotInitialized() public {
-        engine = new FixDescriptorEngine(
-            token,
-            admin,
-            "",
-            IFixDescriptor.FixDescriptor({
-                schemaHash: bytes32(0),
-                fixRoot: bytes32(0),
-                fixSBEPtr: address(0),
-                fixSBELen: 0,
-                schemaURI: ""
-            })
-        );
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
 
         vm.expectRevert("Descriptor not initialized");
         engine.getFixDescriptor();
@@ -386,9 +336,13 @@ contract FixDescriptorEngineTest is Test {
     //////////////////////////////////////////////////////////////*/
 
     function testVerifyField() public {
+        bytes memory pathCBOR = hex"01";
+        bytes memory value = hex"37";
+        bytes32 root = keccak256(abi.encodePacked(pathCBOR, value));
+
         IFixDescriptor.FixDescriptor memory initialDescriptor = IFixDescriptor.FixDescriptor({
             schemaHash: sampleSchemaHash,
-            fixRoot: sampleMerkleRoot,
+            fixRoot: root,
             fixSBEPtr: address(0),
             fixSBELen: 0,
             schemaURI: ""
@@ -396,18 +350,35 @@ contract FixDescriptorEngineTest is Test {
 
         engine = new FixDescriptorEngine(token, admin, sampleSBEData, initialDescriptor);
 
-        // Create a simple merkle proof for testing
-        bytes memory pathCBOR = hex"01";
-        bytes memory value = hex"37";
+        // Single-leaf tree: empty proof should validate exactly the committed leaf.
         bytes32[] memory proof = new bytes32[](0);
         bool[] memory directions = new bool[](0);
 
-        // Note: This will only pass if the root was set to match this proof
-        // In a real scenario, you'd generate proper merkle proofs
         bool isValid = engine.verifyField(pathCBOR, value, proof, directions);
-        // We can't assert true here without proper merkle tree setup
-        // This test demonstrates the function call works
-        assertTrue(isValid || !isValid, "verifyField should return a boolean");
+        assertTrue(isValid, "Valid leaf proof should verify against committed root");
+    }
+
+    function testVerifyFieldReturnsFalseForInvalidLeaf() public {
+        bytes memory pathCBOR = hex"01";
+        bytes memory value = hex"37";
+        bytes memory wrongValue = hex"38";
+        bytes32 root = keccak256(abi.encodePacked(pathCBOR, value));
+
+        IFixDescriptor.FixDescriptor memory initialDescriptor = IFixDescriptor.FixDescriptor({
+            schemaHash: sampleSchemaHash,
+            fixRoot: root,
+            fixSBEPtr: address(0),
+            fixSBELen: 0,
+            schemaURI: ""
+        });
+
+        engine = new FixDescriptorEngine(token, admin, sampleSBEData, initialDescriptor);
+
+        bytes32[] memory proof = new bytes32[](0);
+        bool[] memory directions = new bool[](0);
+
+        bool isValid = engine.verifyField(pathCBOR, wrongValue, proof, directions);
+        assertFalse(isValid, "Wrong leaf should not verify against committed root");
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -415,18 +386,7 @@ contract FixDescriptorEngineTest is Test {
     //////////////////////////////////////////////////////////////*/
 
     function testHasRole() public {
-        engine = new FixDescriptorEngine(
-            token,
-            admin,
-            "",
-            IFixDescriptor.FixDescriptor({
-                schemaHash: bytes32(0),
-                fixRoot: bytes32(0),
-                fixSBEPtr: address(0),
-                fixSBELen: 0,
-                schemaURI: ""
-            })
-        );
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
 
         // Admin should have all roles
         assertTrue(engine.hasRole(engine.DEFAULT_ADMIN_ROLE(), admin), "Admin should have DEFAULT_ADMIN_ROLE");
@@ -438,18 +398,7 @@ contract FixDescriptorEngineTest is Test {
     }
 
     function testGrantRole() public {
-        engine = new FixDescriptorEngine(
-            token,
-            admin,
-            "",
-            IFixDescriptor.FixDescriptor({
-                schemaHash: bytes32(0),
-                fixRoot: bytes32(0),
-                fixSBEPtr: address(0),
-                fixSBELen: 0,
-                schemaURI: ""
-            })
-        );
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
 
         // Verify admin has DEFAULT_ADMIN_ROLE (granted in constructor)
         bytes32 defaultAdminRole = engine.DEFAULT_ADMIN_ROLE();
@@ -482,18 +431,7 @@ contract FixDescriptorEngineTest is Test {
     }
 
     function testRevokeRole() public {
-        engine = new FixDescriptorEngine(
-            token,
-            admin,
-            "",
-            IFixDescriptor.FixDescriptor({
-                schemaHash: bytes32(0),
-                fixRoot: bytes32(0),
-                fixSBEPtr: address(0),
-                fixSBELen: 0,
-                schemaURI: ""
-            })
-        );
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
 
         // Verify admin has DEFAULT_ADMIN_ROLE (granted in constructor)
         assertTrue(engine.hasRole(engine.DEFAULT_ADMIN_ROLE(), admin), "Admin should have DEFAULT_ADMIN_ROLE");
