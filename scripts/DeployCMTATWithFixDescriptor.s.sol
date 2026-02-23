@@ -20,6 +20,7 @@ contract DeployCMTATWithFixDescriptor is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         address admin = vm.envAddress("ADMIN_ADDRESS");
+        address tokenAddress = vm.envAddress("TOKEN_ADDRESS");
         
         vm.startBroadcast(deployerPrivateKey);
 
@@ -59,9 +60,7 @@ contract DeployCMTATWithFixDescriptor is Script {
         //   CMTATWithFixDescriptor token = CMTATWithFixDescriptor(address(proxy));
         //   token.initialize(admin, erc20Attrs, extraInfo, engines);
 
-        // For testing purposes, we'll show how to deploy the engine
-        // In real deployment, deploy proxy first, then engine
-        address tokenAddress = address(implementation); // Replace with proxy address in production
+        // In production, bind engines to the deployed token/proxy address provided via TOKEN_ADDRESS.
         
         // Example 1: Deploy engine WITHOUT constructor initialization (backward compatible)
         // This requires calling setFixDescriptor() or setFixDescriptorWithSBE() later
@@ -117,6 +116,7 @@ contract DeployCMTATWithFixDescriptor is Script {
         console.log("Network:", block.chainid);
         console.log("Deployer:", msg.sender);
         console.log("Admin:", admin);
+        console.log("Token/Proxy:", tokenAddress);
         console.log("CMTAT Implementation:", address(implementation));
         console.log("FixDescriptorEngine (without init):", address(engineWithoutInit));
         console.log("FixDescriptorEngine (with init):", address(engineWithInit));

@@ -241,6 +241,7 @@ forge script scripts/DeployCMTATWithFixDescriptor.s.sol:DeployCMTATWithFixDescri
 Set environment variables:
 - `PRIVATE_KEY` - Deployer private key
 - `ADMIN_ADDRESS` - Admin address for roles
+- `TOKEN_ADDRESS` - Deployed token/proxy address to bind the engine to
 
 ## Access Control
 
