@@ -38,6 +38,10 @@ abstract contract FixDescriptorEngineModule is Initializable {
     function __FixDescriptorEngineModule_init_unchained(address engine_) internal virtual onlyInitializing {
         if (engine_ != address(0)) {
             FixDescriptorEngineModuleStorage storage $ = _getFixDescriptorEngineModuleStorage();
+            require(
+                IFixDescriptorEngine(engine_).token() == address(this),
+                "FixDescriptorEngineModule: Engine not bound to this CMTAT"
+            );
             $._fixDescriptorEngine = engine_;
         }
     }
