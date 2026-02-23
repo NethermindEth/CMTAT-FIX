@@ -15,12 +15,11 @@ import {IFixDescriptor} from "@fixdescriptorkit/contracts/src/IFixDescriptor.sol
  * @notice CMTAT token contract with integrated FIX descriptor support via FixDescriptorEngine
  * @dev Forwards IFixDescriptor calls to the bound FixDescriptorEngine
  */
-contract CMTATWithFixDescriptor is
-    CMTATBaseRuleEngine,
-    FixDescriptorEngineModule,
-    IFixDescriptor
-{
+contract CMTATWithFixDescriptor is CMTATBaseRuleEngine, FixDescriptorEngineModule, IFixDescriptor {
+    /// @notice Role for managing descriptor writes through token helper functions.
+    bytes32 public constant DESCRIPTOR_ADMIN_ROLE = keccak256("DESCRIPTOR_ADMIN_ROLE");
     /// @custom:oz-upgrades-unsafe-allow constructor
+
     constructor() {
         _disableInitializers();
     }
@@ -33,12 +32,7 @@ contract CMTATWithFixDescriptor is
      * @notice Get the complete FIX descriptor for this token
      * @return descriptor The FixDescriptor struct
      */
-    function getFixDescriptor() 
-        external 
-        view 
-        override 
-        returns (IFixDescriptor.FixDescriptor memory descriptor) 
-    {
+    function getFixDescriptor() external view override returns (IFixDescriptor.FixDescriptor memory descriptor) {
         address engine = fixDescriptorEngine();
         require(engine != address(0), "CMTATWithFixDescriptor: Engine not set");
         return IFixDescriptor(engine).getFixDescriptor();
@@ -79,10 +73,7 @@ contract CMTATWithFixDescriptor is
      * @param size Number of bytes to read
      * @return chunk The requested SBE data
      */
-    function getFixSBEChunk(
-        uint256 start,
-        uint256 size
-    ) external view returns (bytes memory chunk) {
+    function getFixSBEChunk(uint256 start, uint256 size) external view returns (bytes memory chunk) {
         address engine = fixDescriptorEngine();
         require(engine != address(0), "CMTATWithFixDescriptor: Engine not set");
         return FixDescriptorEngine(engine).getFixSBEChunk(start, size);
@@ -92,15 +83,19 @@ contract CMTATWithFixDescriptor is
      * @notice Get the descriptor engine address
      * @return engine Address of the FixDescriptorEngine contract, or address(0) if not set
      */
-    function getDescriptorEngine() external view override(FixDescriptorEngineModule, IFixDescriptor) returns (address engine) {
+    function getDescriptorEngine()
+        external
+        view
+        override(FixDescriptorEngineModule, IFixDescriptor)
+        returns (address engine)
+    {
         return fixDescriptorEngine();
     }
 
     /**
      * @notice Authorize descriptor engine setting operation
      */
-    function _authorizeSetDescriptorEngine() internal virtual override onlyRole(DESCRIPTOR_ENGINE_ROLE) {
-    }
+    function _authorizeSetDescriptorEngine() internal virtual override onlyRole(DESCRIPTOR_ENGINE_ROLE) {}
 
     /*//////////////////////////////////////////////////////////////
                         ERC165 SUPPORT
@@ -111,16 +106,8 @@ contract CMTATWithFixDescriptor is
      * @param interfaceId The interface identifier, as specified in ERC-165
      * @return True if the contract implements the interface
      */
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override
-        returns (bool)
-    {
-        return 
-            interfaceId == type(IFixDescriptor).interfaceId ||
-            super.supportsInterface(interfaceId);
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(IFixDescriptor).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -133,10 +120,11 @@ contract CMTATWithFixDescriptor is
      * @param descriptor Descriptor struct (fixSBEPtr and fixSBELen will be set automatically)
      * @return sbePtr Address of the deployed SBE data contract
      */
-    function setDescriptorWithSBE(
-        bytes memory sbeData,
-        IFixDescriptor.FixDescriptor memory descriptor
-    ) external returns (address sbePtr) {
+    function setDescriptorWithSBE(bytes memory sbeData, IFixDescriptor.FixDescriptor memory descriptor)
+        external
+        onlyRole(DESCRIPTOR_ADMIN_ROLE)
+        returns (address sbePtr)
+    {
         address engine = fixDescriptorEngine();
         require(engine != address(0), "CMTATWithFixDescriptor: Engine not set");
         return FixDescriptorEngine(engine).setFixDescriptorWithSBE(sbeData, descriptor);
@@ -146,7 +134,7 @@ contract CMTATWithFixDescriptor is
      * @notice Convenience function to set descriptor via engine
      * @param descriptor The complete FixDescriptor struct (with fixSBEPtr already set)
      */
-    function setDescriptor(IFixDescriptor.FixDescriptor calldata descriptor) external {
+    function setDescriptor(IFixDescriptor.FixDescriptor calldata descriptor) external onlyRole(DESCRIPTOR_ADMIN_ROLE) {
         address engine = fixDescriptorEngine();
         require(engine != address(0), "CMTATWithFixDescriptor: Engine not set");
         FixDescriptorEngine(engine).setFixDescriptor(descriptor);

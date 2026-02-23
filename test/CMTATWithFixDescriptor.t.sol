@@ -35,11 +35,8 @@ contract CMTATWithFixDescriptorTest is Test {
         user = vm.addr(2);
 
         // Prepare CMTAT initialization parameters
-        ICMTATConstructor.ERC20Attributes memory erc20Attrs = ICMTATConstructor.ERC20Attributes({
-            name: "FIX Descriptor Token",
-            symbol: "FIX",
-            decimalsIrrevocable: 0
-        });
+        ICMTATConstructor.ERC20Attributes memory erc20Attrs =
+            ICMTATConstructor.ERC20Attributes({name: "FIX Descriptor Token", symbol: "FIX", decimalsIrrevocable: 0});
 
         IERC1643CMTAT.DocumentInfo memory terms = IERC1643CMTAT.DocumentInfo({
             name: "Token Terms",
@@ -61,29 +58,29 @@ contract CMTATWithFixDescriptorTest is Test {
 
         // Deploy token implementation
         CMTATWithFixDescriptor implementation = new CMTATWithFixDescriptor();
-        
+
         // Deploy proxy and initialize token
         // CMTATWithFixDescriptor is upgradeable and requires proxy deployment
         // The implementation has _disableInitializers() so it cannot be initialized directly
         // We need to deploy via ERC1967Proxy and initialize through the proxy
         // Use abi.encodeCall to properly encode the initialize function call
-        bytes memory initData = abi.encodeCall(
-            CMTATBaseRuleEngine.initialize,
-            (admin, erc20Attrs, extraInfo, engines)
-        );
-        
+        bytes memory initData = abi.encodeCall(CMTATBaseRuleEngine.initialize, (admin, erc20Attrs, extraInfo, engines));
+
         ERC1967Proxy proxy = new ERC1967Proxy(address(implementation), initData);
         token = CMTATWithFixDescriptor(address(proxy));
-        
+
         // Verify admin has DEFAULT_ADMIN_ROLE after initialization (CMTAT pattern)
         bytes32 defaultAdminRole = token.DEFAULT_ADMIN_ROLE();
         assertTrue(token.hasRole(defaultAdminRole, admin), "Admin should have DEFAULT_ADMIN_ROLE after initialization");
         // Verify admin has DESCRIPTOR_ENGINE_ROLE via hasRole override (CMTAT pattern gives admin all roles)
-        assertTrue(token.hasRole(token.DESCRIPTOR_ENGINE_ROLE(), admin), "Admin should have DESCRIPTOR_ENGINE_ROLE via hasRole override");
+        assertTrue(
+            token.hasRole(token.DESCRIPTOR_ENGINE_ROLE(), admin),
+            "Admin should have DESCRIPTOR_ENGINE_ROLE via hasRole override"
+        );
         // Verify the role check that setFixDescriptorEngine will perform
         bytes32 requiredRole = token.DESCRIPTOR_ENGINE_ROLE();
         assertTrue(token.hasRole(requiredRole, admin), "Admin should have DESCRIPTOR_ENGINE_ROLE to set engine");
-        
+
         // Deploy engine bound to token (without constructor initialization for backward compatibility)
         bytes memory emptySBE = "";
         IFixDescriptor.FixDescriptor memory emptyDescriptor = IFixDescriptor.FixDescriptor({
@@ -94,15 +91,18 @@ contract CMTATWithFixDescriptorTest is Test {
             schemaURI: ""
         });
         engine = new FixDescriptorEngine(address(token), admin, emptySBE, emptyDescriptor);
-        
+
         // Verify engine admin has DEFAULT_ADMIN_ROLE
         assertTrue(engine.hasRole(engine.DEFAULT_ADMIN_ROLE(), admin), "Engine admin should have DEFAULT_ADMIN_ROLE");
         // Verify engine admin has DESCRIPTOR_ADMIN_ROLE via hasRole override
-        assertTrue(engine.hasRole(engine.DESCRIPTOR_ADMIN_ROLE(), admin), "Engine admin should have DESCRIPTOR_ADMIN_ROLE via hasRole override");
-        
+        assertTrue(
+            engine.hasRole(engine.DESCRIPTOR_ADMIN_ROLE(), admin),
+            "Engine admin should have DESCRIPTOR_ADMIN_ROLE via hasRole override"
+        );
+
         // Set engine on token (now admin has DEFAULT_ADMIN_ROLE from initialization)
         vm.prank(admin);
-        token.setFixDescriptorEngine(address(engine), address(token));
+        token.setFixDescriptorEngine(address(engine));
 
         // Grant DESCRIPTOR_ADMIN_ROLE to admin on engine (admin already has it via hasRole override, but grant explicitly for clarity)
         vm.startPrank(admin);
@@ -114,7 +114,7 @@ contract CMTATWithFixDescriptorTest is Test {
             schemaHash: sampleSchemaHash,
             fixRoot: sampleMerkleRoot,
             fixSBEPtr: address(0), // Will be set by engine
-            fixSBELen: 0,          // Will be set by engine
+            fixSBELen: 0, // Will be set by engine
             schemaURI: "ipfs://QmExample"
         });
 
@@ -133,7 +133,7 @@ contract CMTATWithFixDescriptorTest is Test {
 
     function testGetFixDescriptor() public view {
         IFixDescriptor.FixDescriptor memory descriptor = token.getFixDescriptor();
-        
+
         assertEq(descriptor.schemaHash, sampleSchemaHash, "Schema hash mismatch");
         assertEq(descriptor.fixRoot, sampleMerkleRoot, "Merkle root mismatch");
         assertTrue(descriptor.fixSBEPtr != address(0), "SBE pointer should be set");
@@ -186,13 +186,12 @@ contract CMTATWithFixDescriptorTest is Test {
         // For a single leaf tree, the proof is empty
         bytes memory pathCBOR = hex"01";
         bytes memory value = hex"37";
-        bytes32 leaf = keccak256(abi.encodePacked(pathCBOR, "=", value));
-        
+
         // If root equals leaf (single node tree), empty proof should work
         // This is a simplified test - in production you'd use real merkle proofs
         bytes32[] memory proof = new bytes32[](0);
         bool[] memory directions = new bool[](0);
-        
+
         // Note: This will only pass if the root was set to match this proof
         // In a real scenario, you'd generate proper merkle proofs
         bool isValid = token.verifyField(pathCBOR, value, proof, directions);
@@ -218,33 +217,33 @@ contract CMTATWithFixDescriptorTest is Test {
     function testGetFixDescriptorRevertsWhenEngineNotSet() public {
         // Deploy new token without engine
         CMTATWithFixDescriptor newToken = new CMTATWithFixDescriptor();
-        
+
         vm.expectRevert("CMTATWithFixDescriptor: Engine not set");
         newToken.getFixDescriptor();
     }
 
     function testGetFixRootRevertsWhenEngineNotSet() public {
         CMTATWithFixDescriptor newToken = new CMTATWithFixDescriptor();
-        
+
         vm.expectRevert("CMTATWithFixDescriptor: Engine not set");
         newToken.getFixRoot();
     }
 
     function testGetFixSBEChunkRevertsWhenEngineNotSet() public {
         CMTATWithFixDescriptor newToken = new CMTATWithFixDescriptor();
-        
+
         vm.expectRevert("CMTATWithFixDescriptor: Engine not set");
         newToken.getFixSBEChunk(0, 10);
     }
 
     function testVerifyFieldRevertsWhenEngineNotSet() public {
         CMTATWithFixDescriptor newToken = new CMTATWithFixDescriptor();
-        
+
         bytes memory pathCBOR = hex"01";
         bytes memory value = hex"37";
         bytes32[] memory proof = new bytes32[](0);
         bool[] memory directions = new bool[](0);
-        
+
         vm.expectRevert("CMTATWithFixDescriptor: Engine not set");
         newToken.verifyField(pathCBOR, value, proof, directions);
     }
@@ -257,10 +256,80 @@ contract CMTATWithFixDescriptorTest is Test {
         assertEq(engine.token(), address(token), "Engine should be bound to token");
     }
 
+    function testSetFixDescriptorEngineRevertsWhenEngineBoundToAnotherToken() public {
+        FixDescriptorEngine otherEngine = new FixDescriptorEngine(
+            address(0xBEEF),
+            admin,
+            "",
+            IFixDescriptor.FixDescriptor({
+                schemaHash: bytes32(0),
+                fixRoot: bytes32(0),
+                fixSBEPtr: address(0),
+                fixSBELen: 0,
+                schemaURI: ""
+            })
+        );
+
+        vm.prank(admin);
+        vm.expectRevert("FixDescriptorEngineModule: Engine not bound to this CMTAT");
+        token.setFixDescriptorEngine(address(otherEngine));
+    }
+
+    function testSetDescriptorWithSBEViaTokenRevertsWhenUnauthorized() public {
+        IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
+            schemaHash: keccak256("unauthorized-dict"),
+            fixRoot: bytes32(uint256(0x111)),
+            fixSBEPtr: address(0),
+            fixSBELen: 0,
+            schemaURI: "ipfs://QmUnauthorized"
+        });
+
+        vm.prank(user);
+        vm.expectRevert();
+        token.setDescriptorWithSBE(hex"deadbeef", descriptor);
+    }
+
+    function testSetDescriptorWithSBEViaTokenWorksForAdmin() public {
+        bytes memory newSBEData = hex"deadbeef";
+        IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
+            schemaHash: keccak256("admin-write-dict"),
+            fixRoot: bytes32(uint256(0x222)),
+            fixSBEPtr: address(0),
+            fixSBELen: 0,
+            schemaURI: "ipfs://QmAdmin"
+        });
+
+        vm.prank(admin);
+        address sbePtr = token.setDescriptorWithSBE(newSBEData, descriptor);
+
+        IFixDescriptor.FixDescriptor memory stored = token.getFixDescriptor();
+        assertEq(stored.fixRoot, bytes32(uint256(0x222)), "Descriptor root should update");
+        assertEq(stored.fixSBELen, uint32(newSBEData.length), "Descriptor SBE length should update");
+        assertEq(stored.fixSBEPtr, sbePtr, "Descriptor SBE pointer should match return value");
+    }
+
+    function testSetDescriptorViaTokenWorksForAdmin() public {
+        IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
+            schemaHash: keccak256("direct-admin-write"),
+            fixRoot: bytes32(uint256(0x333)),
+            fixSBEPtr: address(0x1234567890123456789012345678901234567890),
+            fixSBELen: 42,
+            schemaURI: "ipfs://QmAdminDirect"
+        });
+
+        vm.prank(admin);
+        token.setDescriptor(descriptor);
+
+        IFixDescriptor.FixDescriptor memory stored = token.getFixDescriptor();
+        assertEq(stored.fixRoot, bytes32(uint256(0x333)), "Descriptor root should update");
+        assertEq(stored.fixSBEPtr, descriptor.fixSBEPtr, "Descriptor pointer should update");
+        assertEq(stored.fixSBELen, descriptor.fixSBELen, "Descriptor length should update");
+    }
+
     function testEngineDescriptorMatchesToken() public view {
         IFixDescriptor.FixDescriptor memory engineDesc = engine.getFixDescriptor();
         IFixDescriptor.FixDescriptor memory tokenDesc = token.getFixDescriptor();
-        
+
         assertEq(engineDesc.schemaHash, tokenDesc.schemaHash, "Schema hash should match");
         assertEq(engineDesc.fixRoot, tokenDesc.fixRoot, "Root should match");
         assertEq(engineDesc.fixSBEPtr, tokenDesc.fixSBEPtr, "SBE pointer should match");
@@ -270,14 +339,14 @@ contract CMTATWithFixDescriptorTest is Test {
     function testEngineRootMatchesTokenRoot() public view {
         bytes32 engineRoot = engine.getFixRoot();
         bytes32 tokenRoot = token.getFixRoot();
-        
+
         assertEq(engineRoot, tokenRoot, "Roots should match");
     }
 
     function testEngineSBEChunkMatchesTokenChunk() public view {
         bytes memory engineChunk = engine.getFixSBEChunk(0, sampleSBEData.length);
         bytes memory tokenChunk = token.getFixSBEChunk(0, sampleSBEData.length);
-        
+
         assertEq(engineChunk, tokenChunk, "Chunks should match");
         assertEq(engineChunk, sampleSBEData, "Chunk should match original data");
     }

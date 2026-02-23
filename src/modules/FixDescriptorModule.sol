@@ -65,10 +65,7 @@ abstract contract FixDescriptorModule {
      * @param size Number of bytes to read
      * @return chunk The requested SBE data
      */
-    function _getSBEChunk(
-        uint256 start,
-        uint256 size
-    ) internal view returns (bytes memory chunk) {
+    function _getSBEChunk(uint256 start, uint256 size) internal view returns (bytes memory chunk) {
         return _descriptor.getFixSBEChunk(start, size);
     }
 
@@ -82,10 +79,10 @@ abstract contract FixDescriptorModule {
      * @param descriptor Descriptor struct (fixSBEPtr and fixSBELen will be set automatically)
      * @return sbePtr Address of the deployed SBE data contract
      */
-    function _deployAndSetDescriptor(
-        bytes memory sbeData,
-        IFixDescriptor.FixDescriptor memory descriptor
-    ) internal returns (address sbePtr) {
+    function _deployAndSetDescriptor(bytes memory sbeData, IFixDescriptor.FixDescriptor memory descriptor)
+        internal
+        returns (address sbePtr)
+    {
         sbePtr = _deploySBE(sbeData);
 
         uint256 codeSize;
@@ -111,17 +108,10 @@ abstract contract FixDescriptorModule {
         _descriptor.descriptor = descriptor;
 
         if (_descriptor.initialized) {
-            emit IFixDescriptor.FixDescriptorUpdated(
-                oldRoot,
-                descriptor.fixRoot,
-                descriptor.fixSBEPtr
-            );
+            emit IFixDescriptor.FixDescriptorUpdated(oldRoot, descriptor.fixRoot, descriptor.fixSBEPtr);
         } else {
             emit IFixDescriptor.FixDescriptorSet(
-                descriptor.fixRoot,
-                descriptor.schemaHash,
-                descriptor.fixSBEPtr,
-                descriptor.fixSBELen
+                descriptor.fixRoot, descriptor.schemaHash, descriptor.fixSBEPtr, descriptor.fixSBELen
             );
             _descriptor.initialized = true;
         }
@@ -132,27 +122,26 @@ abstract contract FixDescriptorModule {
      * @param sbeData Raw SBE-encoded data to deploy
      * @param descriptor Descriptor struct
      */
-    function _initializeDescriptorFromConstructor(
-        bytes memory sbeData,
-        IFixDescriptor.FixDescriptor memory descriptor
-    ) internal {
+    function _initializeDescriptorFromConstructor(bytes memory sbeData, IFixDescriptor.FixDescriptor memory descriptor)
+        internal
+    {
         address sbePtr = address(0);
-        
+
         if (sbeData.length > 0) {
             sbePtr = _deploySBE(sbeData);
-            
+
             uint256 codeSize;
             assembly {
                 codeSize := extcodesize(sbePtr)
             }
             require(codeSize == sbeData.length + 1, "FixDescriptorModule: Invalid SBE size");
-            
+
             descriptor.fixSBEPtr = sbePtr;
             descriptor.fixSBELen = uint32(sbeData.length);
         }
-        
+
         require(descriptor.fixRoot != bytes32(0), "FixDescriptorModule: Invalid descriptor root");
-        
+
         _setDescriptorMemory(descriptor);
     }
 

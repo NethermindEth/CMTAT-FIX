@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "forge-std/Script.sol";
 import "../src/FixDescriptorEngine.sol";
 import "../src/examples/CMTATWithFixDescriptor.sol";
 import "../lib/CMTAT/contracts/interfaces/technical/ICMTATConstructor.sol";
@@ -13,7 +14,7 @@ import "@fixdescriptorkit/contracts/src/IFixDescriptor.sol";
  * @dev Deploys a CMTAT token with FIX descriptor support
  * 
  * Usage:
- *   forge script script/DeployCMTATWithFixDescriptor.s.sol:DeployCMTATWithFixDescriptor --rpc-url $RPC_URL --broadcast --verify
+ *   forge script scripts/DeployCMTATWithFixDescriptor.s.sol:DeployCMTATWithFixDescriptor --rpc-url $RPC_URL --broadcast --verify
  */
 contract DeployCMTATWithFixDescriptor is Script {
     function run() external {
@@ -131,7 +132,7 @@ contract DeployCMTATWithFixDescriptor is Script {
         console.log("\n=== Next Steps (Pattern 2 only) ===");
         console.log("1. Deploy proxy pointing to implementation");
         console.log("2. Initialize proxy with initialize()");
-        console.log("3. Call token.setFixDescriptorEngine(address(engine), address(token))");
+        console.log("3. Call token.setFixDescriptorEngine(address(engine))");
         console.log("4. Grant DESCRIPTOR_ADMIN_ROLE on engine to admin");
         console.log("5. Call engine.setFixDescriptorWithSBE() to set descriptor");
     }

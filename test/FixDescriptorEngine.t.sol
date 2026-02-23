@@ -101,13 +101,18 @@ contract FixDescriptorEngineTest is Test {
     //////////////////////////////////////////////////////////////*/
 
     function testSetFixDescriptor() public {
-        engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            schemaHash: bytes32(0),
-            fixRoot: bytes32(0),
-            fixSBEPtr: address(0),
-            fixSBELen: 0,
-            schemaURI: ""
-        }));
+        engine = new FixDescriptorEngine(
+            token,
+            admin,
+            "",
+            IFixDescriptor.FixDescriptor({
+                schemaHash: bytes32(0),
+                fixRoot: bytes32(0),
+                fixSBEPtr: address(0),
+                fixSBELen: 0,
+                schemaURI: ""
+            })
+        );
 
         address preDeployedSBE = address(0x1234567890123456789012345678901234567890);
         IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
@@ -126,13 +131,18 @@ contract FixDescriptorEngineTest is Test {
     }
 
     function testSetFixDescriptorRevertsWhenUnauthorized() public {
-        engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            schemaHash: bytes32(0),
-            fixRoot: bytes32(0),
-            fixSBEPtr: address(0),
-            fixSBELen: 0,
-            schemaURI: ""
-        }));
+        engine = new FixDescriptorEngine(
+            token,
+            admin,
+            "",
+            IFixDescriptor.FixDescriptor({
+                schemaHash: bytes32(0),
+                fixRoot: bytes32(0),
+                fixSBEPtr: address(0),
+                fixSBELen: 0,
+                schemaURI: ""
+            })
+        );
 
         IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
             schemaHash: keccak256("new-dict"),
@@ -148,13 +158,18 @@ contract FixDescriptorEngineTest is Test {
     }
 
     function testSetFixDescriptorWithSBE() public {
-        engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            schemaHash: bytes32(0),
-            fixRoot: bytes32(0),
-            fixSBEPtr: address(0),
-            fixSBELen: 0,
-            schemaURI: ""
-        }));
+        engine = new FixDescriptorEngine(
+            token,
+            admin,
+            "",
+            IFixDescriptor.FixDescriptor({
+                schemaHash: bytes32(0),
+                fixRoot: bytes32(0),
+                fixSBEPtr: address(0),
+                fixSBELen: 0,
+                schemaURI: ""
+            })
+        );
 
         IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
             schemaHash: sampleSchemaHash,
@@ -168,20 +183,54 @@ contract FixDescriptorEngineTest is Test {
         address sbePtr = engine.setFixDescriptorWithSBE(sampleSBEData, descriptor);
 
         assertTrue(sbePtr != address(0), "SBE pointer should be set");
-        
+
         IFixDescriptor.FixDescriptor memory stored = engine.getFixDescriptor();
         assertEq(stored.fixSBEPtr, sbePtr, "SBE pointer should match returned value");
         assertEq(stored.fixSBELen, uint32(sampleSBEData.length), "SBE length should match");
     }
 
-    function testSetFixDescriptorWithSBERevertsWhenUnauthorized() public {
-        engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            schemaHash: bytes32(0),
-            fixRoot: bytes32(0),
+    function testSetFixDescriptorWithSBEAllowsBoundTokenCaller() public {
+        engine = new FixDescriptorEngine(
+            token,
+            admin,
+            "",
+            IFixDescriptor.FixDescriptor({
+                schemaHash: bytes32(0),
+                fixRoot: bytes32(0),
+                fixSBEPtr: address(0),
+                fixSBELen: 0,
+                schemaURI: ""
+            })
+        );
+
+        IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
+            schemaHash: sampleSchemaHash,
+            fixRoot: sampleMerkleRoot,
             fixSBEPtr: address(0),
             fixSBELen: 0,
-            schemaURI: ""
-        }));
+            schemaURI: "ipfs://QmTokenCaller"
+        });
+
+        vm.prank(token);
+        address sbePtr = engine.setFixDescriptorWithSBE(sampleSBEData, descriptor);
+
+        IFixDescriptor.FixDescriptor memory stored = engine.getFixDescriptor();
+        assertEq(stored.fixSBEPtr, sbePtr, "Token caller should be able to update descriptor");
+    }
+
+    function testSetFixDescriptorWithSBERevertsWhenUnauthorized() public {
+        engine = new FixDescriptorEngine(
+            token,
+            admin,
+            "",
+            IFixDescriptor.FixDescriptor({
+                schemaHash: bytes32(0),
+                fixRoot: bytes32(0),
+                fixSBEPtr: address(0),
+                fixSBELen: 0,
+                schemaURI: ""
+            })
+        );
 
         IFixDescriptor.FixDescriptor memory descriptor = IFixDescriptor.FixDescriptor({
             schemaHash: sampleSchemaHash,
@@ -246,13 +295,18 @@ contract FixDescriptorEngineTest is Test {
     }
 
     function testGetFixDescriptorRevertsWhenNotInitialized() public {
-        engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            schemaHash: bytes32(0),
-            fixRoot: bytes32(0),
-            fixSBEPtr: address(0),
-            fixSBELen: 0,
-            schemaURI: ""
-        }));
+        engine = new FixDescriptorEngine(
+            token,
+            admin,
+            "",
+            IFixDescriptor.FixDescriptor({
+                schemaHash: bytes32(0),
+                fixRoot: bytes32(0),
+                fixSBEPtr: address(0),
+                fixSBELen: 0,
+                schemaURI: ""
+            })
+        );
 
         vm.expectRevert("Descriptor not initialized");
         engine.getFixDescriptor();
@@ -361,13 +415,18 @@ contract FixDescriptorEngineTest is Test {
     //////////////////////////////////////////////////////////////*/
 
     function testHasRole() public {
-        engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            schemaHash: bytes32(0),
-            fixRoot: bytes32(0),
-            fixSBEPtr: address(0),
-            fixSBELen: 0,
-            schemaURI: ""
-        }));
+        engine = new FixDescriptorEngine(
+            token,
+            admin,
+            "",
+            IFixDescriptor.FixDescriptor({
+                schemaHash: bytes32(0),
+                fixRoot: bytes32(0),
+                fixSBEPtr: address(0),
+                fixSBELen: 0,
+                schemaURI: ""
+            })
+        );
 
         // Admin should have all roles
         assertTrue(engine.hasRole(engine.DEFAULT_ADMIN_ROLE(), admin), "Admin should have DEFAULT_ADMIN_ROLE");
@@ -379,19 +438,27 @@ contract FixDescriptorEngineTest is Test {
     }
 
     function testGrantRole() public {
-        engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            schemaHash: bytes32(0),
-            fixRoot: bytes32(0),
-            fixSBEPtr: address(0),
-            fixSBELen: 0,
-            schemaURI: ""
-        }));
+        engine = new FixDescriptorEngine(
+            token,
+            admin,
+            "",
+            IFixDescriptor.FixDescriptor({
+                schemaHash: bytes32(0),
+                fixRoot: bytes32(0),
+                fixSBEPtr: address(0),
+                fixSBELen: 0,
+                schemaURI: ""
+            })
+        );
 
         // Verify admin has DEFAULT_ADMIN_ROLE (granted in constructor)
         bytes32 defaultAdminRole = engine.DEFAULT_ADMIN_ROLE();
         assertTrue(engine.hasRole(defaultAdminRole, admin), "Admin should have DEFAULT_ADMIN_ROLE");
         // Verify admin has DESCRIPTOR_ADMIN_ROLE via hasRole override
-        assertTrue(engine.hasRole(engine.DESCRIPTOR_ADMIN_ROLE(), admin), "Admin should have DESCRIPTOR_ADMIN_ROLE via hasRole override");
+        assertTrue(
+            engine.hasRole(engine.DESCRIPTOR_ADMIN_ROLE(), admin),
+            "Admin should have DESCRIPTOR_ADMIN_ROLE via hasRole override"
+        );
         // Verify admin can grant DESCRIPTOR_ADMIN_ROLE (admin role is admin for all roles by default)
         bytes32 adminRole = engine.getRoleAdmin(engine.DESCRIPTOR_ADMIN_ROLE());
         assertEq(adminRole, defaultAdminRole, "DESCRIPTOR_ADMIN_ROLE admin should be DEFAULT_ADMIN_ROLE");
@@ -400,34 +467,50 @@ contract FixDescriptorEngineTest is Test {
         // Double-check: verify the role check that grantRole will perform
         bytes32 roleToGrant = engine.DESCRIPTOR_ADMIN_ROLE();
         bytes32 requiredAdminRole = engine.getRoleAdmin(roleToGrant);
-        assertTrue(engine.hasRole(requiredAdminRole, admin), "Admin should have required admin role to grant DESCRIPTOR_ADMIN_ROLE");
+        assertTrue(
+            engine.hasRole(requiredAdminRole, admin),
+            "Admin should have required admin role to grant DESCRIPTOR_ADMIN_ROLE"
+        );
 
         vm.startPrank(admin);
         engine.grantRole(engine.DESCRIPTOR_ADMIN_ROLE(), user);
         vm.stopPrank();
 
-        assertTrue(engine.hasRole(engine.DESCRIPTOR_ADMIN_ROLE(), user), "User should have DESCRIPTOR_ADMIN_ROLE after grant");
+        assertTrue(
+            engine.hasRole(engine.DESCRIPTOR_ADMIN_ROLE(), user), "User should have DESCRIPTOR_ADMIN_ROLE after grant"
+        );
     }
 
     function testRevokeRole() public {
-        engine = new FixDescriptorEngine(token, admin, "", IFixDescriptor.FixDescriptor({
-            schemaHash: bytes32(0),
-            fixRoot: bytes32(0),
-            fixSBEPtr: address(0),
-            fixSBELen: 0,
-            schemaURI: ""
-        }));
+        engine = new FixDescriptorEngine(
+            token,
+            admin,
+            "",
+            IFixDescriptor.FixDescriptor({
+                schemaHash: bytes32(0),
+                fixRoot: bytes32(0),
+                fixSBEPtr: address(0),
+                fixSBELen: 0,
+                schemaURI: ""
+            })
+        );
 
         // Verify admin has DEFAULT_ADMIN_ROLE (granted in constructor)
         assertTrue(engine.hasRole(engine.DEFAULT_ADMIN_ROLE(), admin), "Admin should have DEFAULT_ADMIN_ROLE");
         // Verify admin can grant DESCRIPTOR_ADMIN_ROLE
-        assertTrue(engine.hasRole(engine.getRoleAdmin(engine.DESCRIPTOR_ADMIN_ROLE()), admin), "Admin should have admin role for DESCRIPTOR_ADMIN_ROLE");
+        assertTrue(
+            engine.hasRole(engine.getRoleAdmin(engine.DESCRIPTOR_ADMIN_ROLE()), admin),
+            "Admin should have admin role for DESCRIPTOR_ADMIN_ROLE"
+        );
 
         vm.startPrank(admin);
         engine.grantRole(engine.DESCRIPTOR_ADMIN_ROLE(), user);
         engine.revokeRole(engine.DESCRIPTOR_ADMIN_ROLE(), user);
         vm.stopPrank();
 
-        assertFalse(engine.hasRole(engine.DESCRIPTOR_ADMIN_ROLE(), user), "User should not have DESCRIPTOR_ADMIN_ROLE after revoke");
+        assertFalse(
+            engine.hasRole(engine.DESCRIPTOR_ADMIN_ROLE(), user),
+            "User should not have DESCRIPTOR_ADMIN_ROLE after revoke"
+        );
     }
 }

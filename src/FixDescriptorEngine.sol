@@ -11,17 +11,24 @@ import "./modules/VersionModule.sol";
  * @notice Engine contract for managing FIX descriptor for a single bound token
  * @dev One engine instance is bound to one token at construction time
  */
-contract FixDescriptorEngine is
-    FixDescriptorModule,
-    VersionModule,
-    AccessControl,
-    IFixDescriptorEngine
-{
+contract FixDescriptorEngine is FixDescriptorModule, VersionModule, AccessControl, IFixDescriptorEngine {
     /// @notice Role for setting descriptors
     bytes32 public constant DESCRIPTOR_ADMIN_ROLE = keccak256("DESCRIPTOR_ADMIN_ROLE");
 
     /// @notice The token this engine is bound to
     address public immutable token;
+
+    /**
+     * @notice Restricts descriptor writes to engine admins or the bound token contract.
+     * @dev The bound token path is used for role-gated forwarding functions on the token.
+     */
+    modifier onlyDescriptorAdminOrToken() {
+        require(
+            msg.sender == token || hasRole(DESCRIPTOR_ADMIN_ROLE, msg.sender),
+            "FixDescriptorEngine: Missing descriptor admin role"
+        );
+        _;
+    }
 
     /**
      * @notice Constructor
@@ -30,17 +37,12 @@ contract FixDescriptorEngine is
      * @param sbeData_ Optional SBE-encoded data to deploy and initialize descriptor
      * @param descriptor_ Optional descriptor struct to initialize
      */
-    constructor(
-        address token_,
-        address admin,
-        bytes memory sbeData_,
-        IFixDescriptor.FixDescriptor memory descriptor_
-    ) {
+    constructor(address token_, address admin, bytes memory sbeData_, IFixDescriptor.FixDescriptor memory descriptor_) {
         require(token_ != address(0), "FixDescriptorEngine: Invalid token address");
         require(admin != address(0), "FixDescriptorEngine: Invalid admin address");
         token = token_;
         _grantRole(DEFAULT_ADMIN_ROLE, admin);
-        
+
         if (sbeData_.length > 0 && descriptor_.fixRoot != bytes32(0)) {
             _initializeDescriptorFromConstructor(sbeData_, descriptor_);
         } else if (descriptor_.fixRoot != bytes32(0)) {
@@ -52,10 +54,7 @@ contract FixDescriptorEngine is
      * @notice Returns `true` if `account` has been granted `role`
      * @dev Default Admin has all roles
      */
-    function hasRole(
-        bytes32 role,
-        address account
-    ) public view virtual override(AccessControl) returns (bool) {
+    function hasRole(bytes32 role, address account) public view virtual override(AccessControl) returns (bool) {
         if (AccessControl.hasRole(DEFAULT_ADMIN_ROLE, account)) {
             return true;
         } else {
@@ -106,10 +105,7 @@ contract FixDescriptorEngine is
      * @param size Number of bytes to read
      * @return chunk The requested SBE data
      */
-    function getFixSBEChunk(
-        uint256 start,
-        uint256 size
-    ) external view returns (bytes memory chunk) {
+    function getFixSBEChunk(uint256 start, uint256 size) external view returns (bytes memory chunk) {
         return _getSBEChunk(start, size);
     }
 
@@ -117,7 +113,7 @@ contract FixDescriptorEngine is
      * @notice Set or update the FIX descriptor for the bound token
      * @param descriptor The complete FixDescriptor struct
      */
-    function setFixDescriptor(IFixDescriptor.FixDescriptor calldata descriptor) external onlyRole(DESCRIPTOR_ADMIN_ROLE) {
+    function setFixDescriptor(IFixDescriptor.FixDescriptor calldata descriptor) external onlyDescriptorAdminOrToken {
         _setDescriptor(descriptor);
     }
 
@@ -127,10 +123,11 @@ contract FixDescriptorEngine is
      * @param descriptor Descriptor struct (fixSBEPtr and fixSBELen will be set automatically)
      * @return sbePtr Address of the deployed SBE data contract
      */
-    function setFixDescriptorWithSBE(
-        bytes memory sbeData,
-        IFixDescriptor.FixDescriptor memory descriptor
-    ) external onlyRole(DESCRIPTOR_ADMIN_ROLE) returns (address sbePtr) {
+    function setFixDescriptorWithSBE(bytes memory sbeData, IFixDescriptor.FixDescriptor memory descriptor)
+        external
+        onlyDescriptorAdminOrToken
+        returns (address sbePtr)
+    {
         return _deployAndSetDescriptor(sbeData, descriptor);
     }
 }

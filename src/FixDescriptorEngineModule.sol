@@ -16,7 +16,8 @@ import "./interfaces/IFixDescriptorEngine.sol";
 abstract contract FixDescriptorEngineModule is Initializable {
     /* ============ ERC-7201 ============ */
     // keccak256(abi.encode(uint256(keccak256("CMTAT.storage.FixDescriptorEngineModule")) - 1)) & ~bytes32(uint256(0xff))
-    bytes32 private constant FixDescriptorEngineModuleStorageLocation = 0xc09aa28957960c2b82e3fad477567fe122f23bca69560181151331ec7041c600;
+    bytes32 private constant FixDescriptorEngineModuleStorageLocation =
+        0xc09aa28957960c2b82e3fad477567fe122f23bca69560181151331ec7041c600;
 
     /* ==== ERC-7201 State Variables === */
     struct FixDescriptorEngineModuleStorage {
@@ -34,11 +35,7 @@ abstract contract FixDescriptorEngineModule is Initializable {
      * @dev Should be called during CMTAT initialization
      * @param engine_ Address of the FixDescriptorEngine contract (can be address(0))
      */
-    function __FixDescriptorEngineModule_init_unchained(address engine_)
-        internal
-        virtual
-        onlyInitializing
-    {
+    function __FixDescriptorEngineModule_init_unchained(address engine_) internal virtual onlyInitializing {
         if (engine_ != address(0)) {
             FixDescriptorEngineModuleStorage storage $ = _getFixDescriptorEngineModuleStorage();
             $._fixDescriptorEngine = engine_;
@@ -49,12 +46,15 @@ abstract contract FixDescriptorEngineModule is Initializable {
      * @notice Set the FIX descriptor engine address
      * @param engine Address of the FixDescriptorEngine contract
      */
-    function setFixDescriptorEngine(address engine, address token) external virtual {
+    function setFixDescriptorEngine(address engine) external virtual {
         _authorizeSetDescriptorEngine();
         FixDescriptorEngineModuleStorage storage $ = _getFixDescriptorEngineModuleStorage();
         require($._fixDescriptorEngine != engine, "FixDescriptorEngineModule: Same engine");
         require(engine != address(0), "FixDescriptorEngineModule: Invalid engine address");
-        require(IFixDescriptorEngine(engine).token() == address(token), "FixDescriptorEngineModule: Engine not bound to this CMTAT");
+        require(
+            IFixDescriptorEngine(engine).token() == address(this),
+            "FixDescriptorEngineModule: Engine not bound to this CMTAT"
+        );
         $._fixDescriptorEngine = engine;
         emit FixDescriptorEngineSet(engine);
     }
@@ -83,11 +83,7 @@ abstract contract FixDescriptorEngineModule is Initializable {
     }
 
     /* ============ ERC-7201 ============ */
-    function _getFixDescriptorEngineModuleStorage()
-        private
-        pure
-        returns (FixDescriptorEngineModuleStorage storage $)
-    {
+    function _getFixDescriptorEngineModuleStorage() private pure returns (FixDescriptorEngineModuleStorage storage $) {
         assembly {
             $.slot := FixDescriptorEngineModuleStorageLocation
         }

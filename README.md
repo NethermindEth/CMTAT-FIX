@@ -143,7 +143,7 @@ engine.setFixDescriptorWithSBE(sbeData, descriptor);
 
 ```solidity
 token.grantRole(token.DESCRIPTOR_ENGINE_ROLE(), admin);
-token.setFixDescriptorEngine(address(engine), address(token));
+token.setFixDescriptorEngine(address(engine));
 ```
 
 #### 4. Query Descriptor Information
@@ -232,7 +232,7 @@ forge test --match-path test/CMTATWithFixDescriptor.t.sol
 Use the provided deployment script:
 
 ```bash
-forge script script/DeployCMTATWithFixDescriptor.s.sol:DeployCMTATWithFixDescriptor \
+forge script scripts/DeployCMTATWithFixDescriptor.s.sol:DeployCMTATWithFixDescriptor \
   --rpc-url $RPC_URL \
   --broadcast \
   --verify
