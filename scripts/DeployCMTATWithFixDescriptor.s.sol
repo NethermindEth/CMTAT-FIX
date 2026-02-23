@@ -44,9 +44,7 @@ contract DeployCMTATWithFixDescriptor is Script {
         });
 
         ICMTATConstructor.Engine memory engines = ICMTATConstructor.Engine({
-            ruleEngine: IRuleEngine(address(0)),
-            snapshotEngine: ISnapshotEngine(address(0)),
-            documentEngine: IERC1643(address(0))
+            ruleEngine: IRuleEngine(address(0))
         });
 
         // Deploy implementation contract

@@ -50,8 +50,8 @@ The project follows CMTAT's modular engine pattern:
 
 ## Dependencies
 
-- **CMTAT** [v3.1.0](https://github.com/CMTA/CMTAT/releases/tag/v3.1.0) - Core token framework
-- **@fixdescriptorkit/contracts** ^1.0.1 - FIX descriptor library
+- **CMTAT** [v3.2.0](https://github.com/CMTA/CMTAT/releases/tag/v3.2.0) - Core token framework
+- **@fixdescriptorkit/contracts** ^1.0.2 - FIX descriptor library
 - **@openzeppelin/contracts-upgradeable** ^5.4.0 - Upgradeable contracts
 
 ## Installation
