@@ -6,6 +6,7 @@ import "../src/FixDescriptorEngine.sol";
 import "../src/examples/CMTATWithFixDescriptor.sol";
 import "../lib/CMTAT/contracts/interfaces/technical/ICMTATConstructor.sol";
 import "../lib/CMTAT/contracts/interfaces/tokenization/draft-IERC1643CMTAT.sol";
+import "../lib/CMTAT/contracts/interfaces/engine/IRuleEngine.sol";
 import "@fixdescriptorkit/contracts/src/IFixDescriptor.sol";
 
 /**
