@@ -4,12 +4,10 @@ pragma solidity ^0.8.20;
 import "forge-std/Test.sol";
 import "../src/examples/CMTATWithFixDescriptor.sol";
 import "../src/FixDescriptorEngine.sol";
-import "CMTAT/contracts/modules/1_CMTATBaseRuleEngine.sol";
+import "CMTAT/contracts/modules/2_CMTATBaseRuleEngine.sol";
 import "CMTAT/contracts/interfaces/technical/ICMTATConstructor.sol";
 import "CMTAT/contracts/interfaces/tokenization/draft-IERC1643CMTAT.sol";
 import "CMTAT/contracts/interfaces/engine/IRuleEngine.sol";
-import "CMTAT/contracts/interfaces/engine/ISnapshotEngine.sol";
-import "CMTAT/contracts/interfaces/engine/IDocumentEngine.sol";
 import "@fixdescriptorkit/contracts/src/IFixDescriptor.sol";
 import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
@@ -54,9 +52,7 @@ contract CMTATWithFixDescriptorTest is Test {
         });
 
         ICMTATConstructor.Engine memory engines = ICMTATConstructor.Engine({
-            ruleEngine: IRuleEngine(address(0)),
-            snapshotEngine: ISnapshotEngine(address(0)),
-            documentEngine: IERC1643(address(0))
+            ruleEngine: IRuleEngine(address(0))
         });
 
         // Deploy token implementation
@@ -186,8 +182,6 @@ contract CMTATWithFixDescriptorTest is Test {
         // For a single leaf tree, the proof is empty
         bytes memory pathCBOR = hex"01";
         bytes memory value = hex"37";
-        bytes32 leaf = keccak256(abi.encodePacked(pathCBOR, "=", value));
-        
         // If root equals leaf (single node tree), empty proof should work
         // This is a simplified test - in production you'd use real merkle proofs
         bytes32[] memory proof = new bytes32[](0);

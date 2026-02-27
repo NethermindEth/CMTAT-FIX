@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+import "forge-std/Script.sol";
 import "../src/FixDescriptorEngine.sol";
 import "../src/examples/CMTATWithFixDescriptor.sol";
 import "../lib/CMTAT/contracts/interfaces/technical/ICMTATConstructor.sol";
 import "../lib/CMTAT/contracts/interfaces/tokenization/draft-IERC1643CMTAT.sol";
+import "../lib/CMTAT/contracts/interfaces/engine/IRuleEngine.sol";
 import "@fixdescriptorkit/contracts/src/IFixDescriptor.sol";
 
 /**
@@ -42,9 +44,7 @@ contract DeployCMTATWithFixDescriptor is Script {
         });
 
         ICMTATConstructor.Engine memory engines = ICMTATConstructor.Engine({
-            ruleEngine: IRuleEngine(address(0)),
-            snapshotEngine: ISnapshotEngine(address(0)),
-            documentEngine: IERC1643(address(0))
+            ruleEngine: IRuleEngine(address(0))
         });
 
         // Deploy implementation contract
