@@ -54,6 +54,14 @@ The project follows CMTAT's modular engine pattern:
 - **@fixdescriptorkit/contracts** ^1.0.2 - FIX descriptor library
 - **@openzeppelin/contracts-upgradeable** [5.6.0](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/tree/v5.6.0) - Upgradeable contracts
 
+### Foundry configuration
+
+See `foundry.toml`
+
+Solidity version: [0.8.34](https://www.soliditylang.org/blog/2026/02/18/solidity-0.8.34-release-announcement) 
+
+EVM version: `Prague`
+
 ## Installation
 
 ### Prerequisites
