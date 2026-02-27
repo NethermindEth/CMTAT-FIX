@@ -142,7 +142,7 @@ engine.setFixDescriptorWithSBE(sbeData, descriptor);
 #### 3. Link Engine to Token
 
 ```solidity
-token.grantRole(token.DESCRIPTOR_ENGINE_ROLE(), admin);
+// Caller must be authorized by token policy (typically DEFAULT_ADMIN_ROLE holder)
 token.setFixDescriptorEngine(address(engine), address(token));
 ```
 
@@ -252,8 +252,8 @@ Set environment variables:
 
 ### Permission Flow
 
-1. Token admin grants `DESCRIPTOR_ENGINE_ROLE` to set engine address
-2. Engine admin (with `DESCRIPTOR_ADMIN_ROLE`) manages descriptors
+1. Token caller authorized by token policy sets engine address (`DESCRIPTOR_ENGINE_ROLE` path)
+2. Engine writes are allowed for `DESCRIPTOR_ADMIN_ROLE` and the bound token caller
 3. Default admin on engine has all permissions
 
 ## Interface Compliance
@@ -268,13 +268,13 @@ The system implements the `IFixDescriptor` interface from `@fixdescriptorkit/con
 ## Security Considerations
 
 - Engine is bound to token at construction (immutable)
-- Descriptor updates require `DESCRIPTOR_ADMIN_ROLE`
+- Descriptor updates are authorized for `DESCRIPTOR_ADMIN_ROLE` and the bound token caller
 - Merkle proofs enable cryptographic verification without revealing full descriptor
 - SSTORE2 pattern ensures efficient and secure data storage
 
 ## License
 
-MIT
+Mozilla Public License 2.0 (MPL-2.0). See `LICENSE`.
 
 ## Contributing
 
