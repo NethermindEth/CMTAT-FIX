@@ -58,9 +58,9 @@ The project follows CMTAT's modular engine pattern:
 
 See `foundry.toml`
 
-Solidity version: [0.8.34](https://www.soliditylang.org/blog/2026/02/18/solidity-0.8.34-release-announcement) 
+- Solidity version: [0.8.34](https://www.soliditylang.org/blog/2026/02/18/solidity-0.8.34-release-announcement) 
 
-EVM version: `Prague`
+- EVM version: `Prague`
 
 ## Installation
 
@@ -280,6 +280,50 @@ The system implements the `IFixDescriptor` interface from `@fixdescriptorkit/con
 - Descriptor updates are authorized for `DESCRIPTOR_ADMIN_ROLE` and the bound token caller
 - Merkle proofs enable cryptographic verification without revealing full descriptor
 - SSTORE2 pattern ensures efficient and secure data storage
+
+
+
+### Tools
+
+### Tools
+
+#### Slither
+
+Report performed with [Slither](https://github.com/crytic/slither):
+
+```bash
+slither .  --checklist --filter-paths "openzeppelin-contracts|test|CMTAT|forge-std|mocks" > slither-report.md
+```
+
+| File | Report | Feedback |
+|------|--------|----------|
+| [`slither-report.md`](doc/audit/tools/slither-report.md) | No findings captured | - |
+
+#### Aderyn
+
+Report performed with [Aderyn](https://github.com/Cyfrin/aderyn):
+
+```bash
+aderyn -x mocks --output aderyn-report.md
+```
+
+| File | Report | Feedback |
+|------|--------|----------|
+| [`aderyn-report.md`](doc/audit/tools/aderyn-report.md) | 2 High, 5 Low | [`aderyn-report-feedback.md`](doc/audit/tools/aderyn-report-feedback.md) |
+
+**Finding summary:**
+
+| ID | Title | Aderyn Severity | Verdict |
+|----|-------|-----------------|---------|
+| H-1 | Contract Name Reused in Different Files | High | False Positive |
+| H-2 | Reentrancy: State change after external call | High | Low — CEI, require privileged caller. |
+| L-1 | Centralization Risk | Low | Valid by Design / Acknowledge |
+| L-2 | Unspecific Solidity Pragma | Low | Valid by Design / Acknowledge |
+| L-3 | PUSH0 Opcode | Low | Conditional / N/A (Prague target) |
+| L-4 | Empty Block | Low | False Positive |
+| L-5 | Unchecked Return | Low | False Positive |
+
+
 
 ## License
 
