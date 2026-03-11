@@ -1,6 +1,6 @@
 # CMTAT-FIX
 
-Integration of FIX descriptor support for CMTAT (Capital Markets Technology Architecture Token) contracts. This repository provides a modular engine system that enables CMTAT tokens to store, manage, and verify FIX (Financial Information eXchange) protocol descriptors on-chain.
+Integration of FIX descriptor support for [CMTAT](https://github.com/CMTA/CMTAT) (The Capital Markets and Technology Association Token) contracts. This repository provides a modular engine system that enables CMTAT tokens to store, manage, and verify FIX (Financial Information eXchange) protocol descriptors on-chain.
 
 ## Overview
 
@@ -24,7 +24,7 @@ The project follows CMTAT's modular engine pattern:
 1. **FixDescriptorEngine** - Main engine contract bound to a single token
    - Manages descriptor storage and verification
    - Implements `IFixDescriptor` interface
-   - Uses AccessControl for permission management
+   - Uses `AccessControlEnumerable` for permission management with role member enumeration
 
 2. **FixDescriptorEngineBase** - Abstract base for engine mechanics
    - Exposes public/external API (`getFixDescriptor`, `setFixDescriptor`, etc.)
@@ -95,7 +95,7 @@ npm install
 forge install
 ```
 
-## Architecture
+## Architecture Diagrams
 
 ### CMTATWithFixDescriptor
 
@@ -140,7 +140,7 @@ See more in [./doc/surya](./doc/surya)
 
 ### FixDescriptorEngine
 
-Main engine contract. One instance is bound to one token at construction time. Inherits `FixDescriptorEngineBase`, `AccessControl`.
+Main engine contract. One instance is bound to one token at construction time. Inherits `FixDescriptorEngineBase`, `AccessControlEnumerable`.
 
 #### State Variables
 
@@ -162,6 +162,8 @@ Main engine contract. One instance is bound to one token at construction time. I
 | `setFixDescriptor` | `(FixDescriptor descriptor)` | external | Sets/updates the descriptor. Requires `DESCRIPTOR_ADMIN_ROLE` or caller is the bound token. |
 | `setFixDescriptorWithSBE` | `(bytes sbeData, FixDescriptor descriptor) → address sbePtr` | external | Deploys SBE data via SSTORE2 and atomically updates the descriptor. Returns the deployed data contract address. Requires `DESCRIPTOR_ADMIN_ROLE` or caller is the bound token. |
 | `version` | `() → string` | external pure | Returns the version string (e.g. `"1.0.0"`). |
+| `getRoleMemberCount` | `(bytes32 role) → uint256` | public view | Returns the number of accounts with `role`. Inherited from `AccessControlEnumerable`. |
+| `getRoleMember` | `(bytes32 role, uint256 index) → address` | public view | Returns the account at position `index` in the role's member set. Inherited from `AccessControlEnumerable`. |
 
 ---
 
@@ -402,11 +404,11 @@ The system implements the `IFixDescriptor` interface from `@fixdescriptorkit/con
 - Merkle proofs enable cryptographic verification without revealing full descriptor
 - SSTORE2 pattern ensures efficient and secure data storage
 
-
-
-### Tools
+## Audit
 
 ### Tools
+
+
 
 #### Slither
 
@@ -444,7 +446,13 @@ aderyn -x mocks --output aderyn-report.md
 | L-4 | Empty Block | Low | False Positive |
 | L-5 | Unchecked Return | Low | False Positive |
 
+### Forge coverage
 
+```bash
+forge coverage --no-match-coverage "(script|mocks|test)" --report lcov && genhtml lcov.info --branch-coverage --output-dir coverage
+```
+
+See [Solidity Coverage in VS Code with Foundry](https://mirror.xyz/devanon.eth/RrDvKPnlD-pmpuW7hQeR5wWdVjklrpOgPCOA-PJkWFU) & [Foundry forge coverage](https://www.rareskills.io/post/foundry-forge-coverage)
 
 ## License
 

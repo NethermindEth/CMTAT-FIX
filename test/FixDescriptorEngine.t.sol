@@ -382,6 +382,57 @@ contract FixDescriptorEngineTest is Test {
     }
 
     /*//////////////////////////////////////////////////////////////
+                        ACCESS CONTROL ENUMERABLE TESTS
+    //////////////////////////////////////////////////////////////*/
+
+    function testGetRoleMemberCount() public {
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
+
+        assertEq(engine.getRoleMemberCount(engine.DEFAULT_ADMIN_ROLE()), 1, "DEFAULT_ADMIN_ROLE should have 1 member");
+        assertEq(engine.getRoleMemberCount(engine.DESCRIPTOR_ADMIN_ROLE()), 0, "DESCRIPTOR_ADMIN_ROLE should have 0 explicit members");
+    }
+
+    function testGetRoleMember() public {
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
+
+        assertEq(engine.getRoleMember(engine.DEFAULT_ADMIN_ROLE(), 0), admin, "First DEFAULT_ADMIN_ROLE member should be admin");
+    }
+
+    function testGetRoleMemberCountAfterGrant() public {
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
+
+        vm.startPrank(admin);
+        engine.grantRole(engine.DESCRIPTOR_ADMIN_ROLE(), user);
+        vm.stopPrank();
+
+        assertEq(engine.getRoleMemberCount(engine.DESCRIPTOR_ADMIN_ROLE()), 1, "DESCRIPTOR_ADMIN_ROLE should have 1 member after grant");
+        assertEq(engine.getRoleMember(engine.DESCRIPTOR_ADMIN_ROLE(), 0), user, "Member should be user");
+    }
+
+    function testGetRoleMemberCountAfterRevoke() public {
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
+
+        vm.startPrank(admin);
+        engine.grantRole(engine.DESCRIPTOR_ADMIN_ROLE(), user);
+        engine.revokeRole(engine.DESCRIPTOR_ADMIN_ROLE(), user);
+        vm.stopPrank();
+
+        assertEq(engine.getRoleMemberCount(engine.DESCRIPTOR_ADMIN_ROLE()), 0, "DESCRIPTOR_ADMIN_ROLE should have 0 members after revoke");
+    }
+
+    function testGetRoleMembersMultiple() public {
+        address user2 = vm.addr(3);
+        engine = new FixDescriptorEngine(token, admin, "", _emptyDescriptor());
+
+        vm.startPrank(admin);
+        engine.grantRole(engine.DESCRIPTOR_ADMIN_ROLE(), user);
+        engine.grantRole(engine.DESCRIPTOR_ADMIN_ROLE(), user2);
+        vm.stopPrank();
+
+        assertEq(engine.getRoleMemberCount(engine.DESCRIPTOR_ADMIN_ROLE()), 2, "Should have 2 members");
+    }
+
+    /*//////////////////////////////////////////////////////////////
                         ACCESS CONTROL TESTS
     //////////////////////////////////////////////////////////////*/
 

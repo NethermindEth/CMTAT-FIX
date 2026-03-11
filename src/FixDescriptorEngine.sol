@@ -2,6 +2,8 @@
 pragma solidity ^0.8.20;
 
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
+import {AccessControlEnumerable} from "@openzeppelin/contracts/access/extensions/AccessControlEnumerable.sol";
 import {IFixDescriptor} from "@fixdescriptorkit/contracts/src/IFixDescriptor.sol";
 import {FixDescriptorEngineBase} from "./FixDescriptorEngineBase.sol";
 
@@ -10,7 +12,7 @@ import {FixDescriptorEngineBase} from "./FixDescriptorEngineBase.sol";
  * @notice Engine contract for managing FIX descriptor for a single bound token
  * @dev One engine instance is bound to one token at construction time
  */
-contract FixDescriptorEngine is FixDescriptorEngineBase, AccessControl {
+contract FixDescriptorEngine is FixDescriptorEngineBase, AccessControlEnumerable {
     /// @notice Role for setting descriptors
     bytes32 public constant DESCRIPTOR_ADMIN_ROLE = keccak256("DESCRIPTOR_ADMIN_ROLE");
 
@@ -32,7 +34,7 @@ contract FixDescriptorEngine is FixDescriptorEngineBase, AccessControl {
      * @notice Returns `true` if `account` has been granted `role`
      * @dev Default Admin has all roles
      */
-    function hasRole(bytes32 role, address account) public view virtual override(AccessControl) returns (bool) {
+    function hasRole(bytes32 role, address account) public view virtual override(AccessControl, IAccessControl) returns (bool) {
         if (AccessControl.hasRole(DEFAULT_ADMIN_ROLE, account)) {
             return true;
         } else {
