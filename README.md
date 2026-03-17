@@ -2,6 +2,8 @@
 
 Integration of FIX descriptor support for [CMTAT](https://github.com/CMTA/CMTAT) (The Capital Markets and Technology Association Token) contracts. This repository provides a modular engine system that enables CMTAT tokens to store, manage, and verify FIX (Financial Information eXchange) protocol descriptors on-chain.
 
+This project was initially developed by [Nethermind](https://nethermind.io/) in collaboration with [CMTA](https://cmta.ch/) and [Taurus](https://www.taurushq.com/).
+
 ## Overview
 
 CMTAT-FIX extends CMTAT tokens with FIX descriptor capabilities through a dedicated engine architecture. The system allows tokens to:
@@ -10,6 +12,36 @@ CMTAT-FIX extends CMTAT tokens with FIX descriptor capabilities through a dedica
 - Commit to descriptor structures via Merkle roots
 - Verify field values against committed descriptors using Merkle proofs
 - Deploy descriptor data efficiently using SSTORE2 pattern
+
+### How FIX messages are used to identify assets?
+
+FIX (Financial Information eXchange) is the standard way traditional finance encode messages including describing instruments (e.g. Symbol, SecurityID, MaturityDate, Parties). Here, a **descriptor** is a FIX message (or subset) that identifies an asset. It is turned into a single, deterministic form, then committed on-chain so anyone can prove specific fields without the contract ever parsing FIX.
+
+```
+   FIX message (off-chain)          On-chain
+   ─────────────────────           ────────
+   Symbol, SecurityID,              fixRoot (Merkle root)
+   MaturityDate, ...    ───────►    + SBE data (SSTORE2)
+         │                         │
+         ▼                         ▼
+   canonical tree  ──►  SBE + Merkle tree   ──►  verify(path, value, proof)
+   (sorted, stable)     (binary + commitment)        (no FIX parsing)
+```
+
+The contract stores only the Merkle root and SBE data; it never parses FIX. Verification is a separate call: callers supply path, value, and Merkle proof, and the contract checks the proof against the stored root.
+
+Details (canonicalization, SBE encoding, Merkle rules, verification) are in the [FIX Descriptor Specification](https://fixdescriptor.vercel.app/spec).
+
+### Terminology
+
+| Term | Meaning |
+|------|--------|
+| **Descriptor** | The FIX message subset describing instrument characteristics (e.g. Symbol, SecurityID, MaturityDate, Parties). |
+| **Canonical form** | Deterministic representation (sorted keys, consistent encoding) so all implementations agree. |
+| **Path** | Location of a field in the tree (e.g. scalar `[55]` for Symbol, or `[453, 0, 448]` for first Party’s PartyID). On-chain, the path is passed as CBOR-encoded bytes (`pathCBOR`). |
+| **SBE** | Simple Binary Encoding; efficient binary format for the descriptor. |
+| **fixRoot** | Merkle root committing to all descriptor fields; stored onchain. |
+| **Merkle proof** | Sibling hashes proving a (path, value) leaf under the stored fixRoot. |
 
 ## Security Notice
 
@@ -459,6 +491,7 @@ Contributions are welcome! Please ensure:
 
 ## References
 
+- [FIX Descriptor Specification](https://fixdescriptor.vercel.app/spec) – Canonicalization, SBE encoding, Merkle commitment, onchain verification
 - [CMTAT Documentation](https://github.com/CMTA/CMTAT)
 - [FIX Protocol](https://www.fixtrading.org/)
 - [FixDescriptorKit](https://github.com/NethermindEth/fix-descriptor)
