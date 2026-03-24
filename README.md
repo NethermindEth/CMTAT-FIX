@@ -63,7 +63,7 @@ The **FixDescriptorEngine** works with **any token** that implements `IFixDescri
 ### CMTAT integration
 
 - **FixDescriptorEngineModule** (`src/`) – CMTAT module that plugs the engine into a CMTAT token (ERC-7201 storage, engine reference); reusable by any CMTAT token
-- **CMTATWithFixDescriptor** (`src/example/`) – Example CMTAT token using the module; forwards `IFixDescriptor` to the bound engine
+- **CMTATWithFixDescriptor** (`src/CMTAT/`) – Example CMTAT token using the module; forwards `IFixDescriptor` to the bound engine
 
 ### Design Principles
 
@@ -353,7 +353,7 @@ CMTAT-FIX/
 │   │       ├── FixDescriptorModule.sol
 │   │       └── VersionModule.sol
 │   ├── FixDescriptorEngineModule.sol     # CMTAT module (reusable)
-│   └── example/                          # Example CMTAT token using the module
+│   └── CMTAT/                            # Example CMTAT token using the module
 │       └── CMTATWithFixDescriptor.sol
 ├── lib/
 │   └── CMTAT/                            # CMTAT submodule
