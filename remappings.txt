@@ -1,0 +1,8 @@
+@openzeppelin/contracts/=lib/CMTAT/openzeppelin-contracts-upgradeable/lib/openzeppelin-contracts/contracts/
+@openzeppelin/contracts-upgradeable/=lib/CMTAT/openzeppelin-contracts-upgradeable/contracts/
+@fixdescriptorkit/contracts/=node_modules/@fixdescriptorkit/contracts/
+forge-std/=lib/forge-std/src/
+CMTAT/contracts/=lib/CMTAT/contracts/
+erc4626-tests/=lib/CMTAT/openzeppelin-contracts-upgradeable/lib/erc4626-tests/
+halmos-cheatcodes/=lib/CMTAT/openzeppelin-contracts-upgradeable/lib/halmos-cheatcodes/src/
+openzeppelin-contracts/=lib/CMTAT/openzeppelin-contracts-upgradeable/lib/openzeppelin-contracts/
