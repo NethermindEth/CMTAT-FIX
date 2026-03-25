@@ -389,7 +389,7 @@ slither .  --checklist --filter-paths "openzeppelin-contracts|test|CMTAT|forge-s
 
 | File | Report | Feedback |
 |------|--------|----------|
-| [`slither-report.md`](doc/audit/tools/slither-report.md) | No findings captured | - |
+| [`slither-report.md`](./doc/audit/tools/slither-report.md) | No findings captured | - |
 
 ##### Aderyn
 
@@ -401,7 +401,7 @@ aderyn -x mocks --output aderyn-report.md
 
 | File | Report | Feedback |
 |------|--------|----------|
-| [`aderyn-report.md`](doc/audit/tools/aderyn-report.md) | 1 High, 4 Low | [`aderyn-report-feedback.md`](doc/audit/tools/aderyn-report-feedback.md) |
+| [`aderyn-report.md`](doc/audit/tools/aderyn-report.md) | 1 High, 4 Low | [`aderyn-report-feedback.md`](./doc/audit/tools/aderyn-report-feedback.md) |
 
 **Finding summary:**
 
@@ -502,6 +502,6 @@ Contributions are welcome! Please ensure:
 ## References
 
 - [FIX Descriptor Specification](https://fixdescriptor.vercel.app/spec) – Canonicalization, SBE encoding, Merkle commitment, onchain verification
-- [CMTAT Documentation](https://github.com/CMTA/CMTAT)
+- [CMTAT Solidity](https://github.com/CMTA/CMTAT)
 - [FIX Protocol](https://www.fixtrading.org/)
 - [FixDescriptorKit](https://github.com/NethermindEth/fix-descriptor)
