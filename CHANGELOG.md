@@ -13,6 +13,9 @@ All notable changes to this project are documented in this file.
 - Emit `FixDescriptorEngineSet` when engine is set via `__fixDescriptorEngineModuleInitUnchained(...)` to improve indexer/audit-trail completeness.
 - Replaced `this.token()` with immutable `TOKEN` in engine authorization hooks to remove unnecessary external self-calls.
 
+### Fixed
+- Corrected `FixDescriptorEngineModule` ERC-7201 storage slot constant to match `keccak256(abi.encode(uint256(keccak256("CMTAT.storage.FixDescriptorEngineModule")) - 1)) & ~bytes32(uint256(0xff))` (the previous literal did not match the documented formula).
+
 ## [0.1.0] - 2026-03-25
 
 ### Added
