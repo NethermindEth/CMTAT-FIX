@@ -47,9 +47,3 @@ Source report: [`audit_agent_report_v0.2.0.pdf`](./audit_agent_report_v0.2.0.pdf
 Each SBE update deploys a new bytecode contract for the payload; the descriptor’s `fixSBEPtr` moves to the new deployment. Older deployments remain on-chain and are not erased (post-Dencun `selfdestruct` constraints; SSTORE2 does not rely on destruction).
 
 **Action taken:** None required in-contract. Off-chain systems should treat **`fixSBEPtr` / `fixSBELen` from the current descriptor** (and emitted events) as authoritative; older pointers are historical blobs unless explicitly tracked.
-
----
-
-## On keeping prior reports in the repository
-
-Older PDFs (e.g. `audit_agent_report_v0.1.0.pdf`) are **kept** alongside feedback files so the repo retains a **versioned audit-tool history** comparable to other tool reports (Slither, Aderyn). Consumers should rely on the report that matches the commit range they care about.

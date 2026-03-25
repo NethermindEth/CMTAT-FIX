@@ -407,7 +407,7 @@ aderyn -x mocks --output aderyn-report.md
 
 #### Nethermind Audit Agent
 
-Automated scans (AI-generated; not a substitute for a full manual audit). Prior PDFs are kept for a versioned tool history.
+Automated scans (AI-generated; not a substitute for a full manual audit).
 
 | File | Report | Feedback |
 |------|--------|----------|
